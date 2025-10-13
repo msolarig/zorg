@@ -1,0 +1,18 @@
+# Zig build artifacts
+zig-out/
+.zig-cache/
+
+# Python environment
+data/venv/
+__pycache__/
+*.pyc
+
+# SQLite DB files
+data/*.db
+
+# macOS junk
+.DS_Store
+
+# Editor / IDE files
+.vscode/
+.idea/
