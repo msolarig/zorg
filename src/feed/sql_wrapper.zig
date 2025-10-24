@@ -68,3 +68,23 @@ pub fn query(db: *anyopaque, com: []const u8) !void {
 
   _ = sqlite3_finalize(stmt.?);
 }
+
+pub fn loadTrack(db_path: []const u8, table_name: []u8, inclusive_satrt_ts: u32, inclusive_end_ts: u32) !Track {
+  var track: Track = Track{};
+
+  const database_handle = try openDB(db_path); 
+  // is it necessary? not sure yet, it seems like queries can run with the db closed
+
+  const command: []const u8 = std.fmt.allocPrint(allocator, "SELECT * EXCLUDE symbol FROM {}", .{table_name});
+  const c_command = try std.heap.c_allocator.dupeZ(u8, command);
+  defer std.heap.c_allocator.free(c_command);
+
+
+  // continue implementation of function.
+  // load track of data => make database accessible to auto scripts
+
+
+
+
+  return track;
+}
