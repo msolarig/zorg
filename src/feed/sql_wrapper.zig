@@ -69,22 +69,42 @@ pub fn query(db: *anyopaque, com: []const u8) !void {
   _ = sqlite3_finalize(stmt.?);
 }
 
-pub fn loadTrack(db_path: []const u8, table_name: []u8, inclusive_satrt_ts: u32, inclusive_end_ts: u32) !Track {
-  var track: Track = Track{};
+pub fn loadTrack(alloc: std.mem.Allocator, db_handle: *anyopaque, 
+                 table_name: []const u8, start_ts: u64, end_ts: u64) !Track {
 
-  const database_handle = try openDB(db_path); 
-  // is it necessary? not sure yet, it seems like queries can run with the db closed
-
-  const command: []const u8 = std.fmt.allocPrint(allocator, "SELECT * EXCLUDE symbol FROM {}", .{table_name});
+  const command: []const u8 = try std.fmt.allocPrint(
+    alloc,
+    "SELECT timestamp, open, high, low, close, volume FROM {s}",
+    .{table_name});
   const c_command = try std.heap.c_allocator.dupeZ(u8, command);
   defer std.heap.c_allocator.free(c_command);
+  defer alloc.free(command);
 
+  var stmt: ?*anyopaque = null;
+  var tail: ?*[*:0]const u8 = null;
+  const prepare = sqlite3_prepare_v2(db_handle, c_command, -1, &stmt, &tail);
 
-  // continue implementation of function.
-  // load track of data => make database accessible to auto scripts
+  if (prepare != 0) {
+    const errmsg = sqlite3_errmsg(db_handle);
+    const msg = std.mem.span(errmsg);
+    std.debug.print("SQLite prepare error: {s}\n", .{msg});
+    return error.PrepareFailed;
+  }
 
+  var track = Track.init();
 
-
-
+  while (sqlite3_step(stmt.?) == 100) {
+    const timestamp: u64 = @intFromFloat(sqlite3_column_double(stmt.?, 0));
+    // Non-inclusive bounds
+    if (timestamp > start_ts and timestamp < end_ts) {
+      const open = sqlite3_column_double(stmt.?, 1);
+      const high = sqlite3_column_double(stmt.?, 2);
+      const low = sqlite3_column_double(stmt.?, 3);
+      const close = sqlite3_column_double(stmt.?, 4);
+      const volume: u64 = @intFromFloat(sqlite3_column_double(stmt.?, 5));
+      try track.addRow(alloc, timestamp, open, high, low, close, volume);
+    }
+  }
+  _ = sqlite3_finalize(stmt.?);
   return track;
 }
