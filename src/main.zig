@@ -1,5 +1,5 @@
 const std = @import("std");
-const data = @import("feed/sql_wrapper.zig");
+const db = @import("feed/sql_wrapper.zig");
 const Track = @import("feed/track.zig").Track;
 const Trail = @import("feed/trail.zig").Trail;
 
@@ -10,7 +10,7 @@ pub fn main() !void {
   const alloc = gpa.allocator();
 
   // open db
-  const handle: *anyopaque = try data.openDB("data/market.db");
+  const handle: *anyopaque = try db.openDB("data/market.db");
 
   // Track setup code
   var test_track: Track = Track.init();
@@ -20,7 +20,7 @@ pub fn main() !void {
   std.debug.print("{any}\n", .{ test_track.op.items[0] });
 
   // close db
-  try data.closeDB(handle);
+  try db.closeDB(handle);
 
   //
   // TRAIL TESTS
