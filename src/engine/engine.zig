@@ -1,27 +1,25 @@
-const std = @import("std");
-const db = @import("feed/db.zig");
-const trackmod = @import("feed/track.zig");
-const algomod = @import("auto/auto.zig");
-const mapmod = @import("map.zig");
+const std   = @import("std");
+const Track = @import("../feed/track.zig").Track;
+const Trail = @import("../feed/trail.zig").Trail;
+const Map   = @import("map.zig").Map;
 
 pub const Engine = struct {
-  allocator: std.mem.Allocator,
-  db_handle: ?*anyopaque,
-  track: ?trackmod.Track,
-  algo: ?algomod.Algo,
-  map: mapmod.Map,
+    alloc: std.mem.Allocator,
+    map: Map,
+    track: ?Track,
+    trail: ?Trail,
 
-  pub fn init(allocator: std.mem.Allocator, map: mapmod.Map) !Engine {
-    var e = Engine{.allocator = allocator, .map = map,};
-    return e;
-  }
+    pub fn init(alloc: std.mem.Allocator, map_path: []const u8) !Engine {
+        return Engine{
+            .alloc = alloc,
+            .map   = try Map.init(alloc, map_path),
+            .track = null,
+            .trail = null,
+        };
+    }
 
-  pub fn loadData(self: *Engine) !void {
-    self.db_handle = try db.openDB(self.map.db_path);
-    self.track = try db.loadTrack(self.handle, self.map.db_table, self.map.track_size, self.allocator);
-    std.debug.print("Loaded {d} bars into track from table {s}\n", .{self.map.track_size, self.map.db_table});
-  }
-
-
-
+    pub fn deinit(self: *Engine) void {
+        self.map.deinit();
+        // deinit track/trail here if/when they are owned by Engine
+    }
 };

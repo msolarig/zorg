@@ -1,0 +1,8 @@
+{
+  "auto": "usr/autos/test_auto.zig",
+  "db": "data/market.db",
+  "table": "AJG_D1",
+  "t0": 1704153600,
+  "tn": 1707350400,
+  "mode": "Backtest"
+}
