@@ -7,6 +7,8 @@ The Robotic Execution & Research Terminal
 
 An Open-Source Engine Made to Build, Test, and Live-Execute Finacial Algorithms! 
 
+![Alt text](/assets/readme/diagrams/planned_structure.png?raw=true "Planned Structure")
+
 ## Status
 
 This project is under (*very*) early development, with breaking changes happening often. I expect to add a lot of features as I shape ROBERT into more of a stable application soon. 
