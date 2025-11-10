@@ -19,6 +19,11 @@ pub extern fn sqlite3_errmsg(db: *anyopaque) [*:0]const u8;
 // Integration and wraping of SQLite funtions (imported from C modules)
 // ---------------------------------------------------------------------
 
+const DataBaseError = error{
+    FailedToOpen,
+    FailedToClose,
+};
+
 pub fn openDB(path: []const u8) !*anyopaque {
   var db_handle: ?*anyopaque = null;
   const c_path = try std.heap.c_allocator.dupeZ(u8, path);
@@ -26,8 +31,7 @@ pub fn openDB(path: []const u8) !*anyopaque {
   const open = sqlite3_open(c_path, &db_handle);
 
   if(open != 0) {
-    std.debug.print("Failed to open DB\n", .{});
-    return error.OpenFailed;
+    return DataBaseError.FailedToOpen;
   }
   return db_handle.?;
 }
@@ -36,7 +40,6 @@ pub fn closeDB(db_handle: *anyopaque) !void {
   const close = sqlite3_close(db_handle);
 
   if (close != 0) {
-    std.debug.print("Failed to close DB\n", .{});
-    return error.CloseFailed;
+    return DataBaseError.FailedToClose;
   }
 }

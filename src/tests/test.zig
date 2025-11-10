@@ -48,5 +48,12 @@ test "TRACK_TESTS" {
   try db.closeDB(instrument_test_db_handle);
 }
 
-
 // TODO: trail, engine setup 
+
+test "TRAIL_TESTS" {
+
+}
+
+test "ENGINE_TESTS" {
+
+}
