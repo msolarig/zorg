@@ -1,4 +1,5 @@
 const std = @import("std");
+const db = @import("../feed/sql_wrapper.zig");
 
 const Mode = enum {
   LiveExecution,
@@ -13,6 +14,7 @@ pub const Map = struct {
   table: []const u8,
   t0: u64,
   tn: u64,
+  trail_size: u64,
   mode: Mode,
 
   pub fn init(alloc: std.mem.Allocator, map_path: []const u8) !Map {
@@ -24,7 +26,7 @@ pub const Map = struct {
 
     const MapPlaceHolder = struct {
       auto: []const u8, db: []const u8, table: []const u8, 
-      t0: u64, tn: u64, mode: Mode,};
+      t0: u64, tn: u64, trail_size: u64, mode: Mode,};
 
     var parsed_map = try std.json.parseFromSlice(
           MapPlaceHolder, alloc, json_bytes, .{});
@@ -39,6 +41,7 @@ pub const Map = struct {
       .table = try alloc.dupe(u8, decoded_map.table),
       .t0 = decoded_map.t0,
       .tn = decoded_map.tn,
+      .trail_size = decoded_map.trail_size,
       .mode = decoded_map.mode,
     };
   }

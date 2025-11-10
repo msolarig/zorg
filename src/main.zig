@@ -48,11 +48,16 @@ pub fn main() !void {
   
   var test_engine: Engine = try Engine.init(alloc, "usr/maps/test_map.json");
   defer test_engine.deinit();
-
+  
   std.debug.print("{s}\n", .{test_engine.map.auto});
   std.debug.print("{s}\n", .{test_engine.map.db});
   std.debug.print("{s}\n", .{test_engine.map.table});
   std.debug.print("{d}\n", .{test_engine.map.t0});
   std.debug.print("{d}\n", .{test_engine.map.tn});
   std.debug.print("{any}\n", .{test_engine.map.mode});
+  
+  std.debug.print("\n", .{});
+
+  std.debug.print("{d}\n", .{test_engine.trail.cl[0]});
+  std.debug.print("{d}\n", .{test_engine.track.cl.items[test_engine.track.size - 1]});
 }
