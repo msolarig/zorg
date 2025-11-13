@@ -48,5 +48,4 @@ pub fn build(b: *std.Build) void {
   run_t.cwd = b.path(".");
 
   test_step.dependOn(&run_t.step);
-  // ------------------------------------------------------
 }
