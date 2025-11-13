@@ -10,7 +10,6 @@ pub fn main() !void {
 
   var engine: Engine = try Engine.init(alloc, "test_map.json");
   defer engine.deinit();
-
   try engine.ExecuteProcess();
 }
 

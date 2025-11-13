@@ -35,7 +35,7 @@ pub fn autoSrcRelPathToCompiledAbsPath(alloc: std.mem.Allocator, auto_path: []co
   const root_abs_path = try getProjectRootPath(alloc);
   defer alloc.free(root_abs_path);
     
-  return try std.fmt.allocPrint(alloc, "{s}/zig-out/usr/autos/{s}.dylib", .{root_abs_path, file_stem});
+  return try std.fmt.allocPrint(alloc, "{s}/zig-out/bin/usr/autos/{s}.dylib", .{root_abs_path, file_stem});
 }
 
 /// Converts "usr/data/DB.db" to its absolute system path
