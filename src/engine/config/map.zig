@@ -2,17 +2,26 @@ const std = @import("std");
 const db = @import("../data/db_wrap.zig");
 const path_util = @import("../../utils/path.zig");
 
+/// Data Feed Mode
+///  defines whether the engine works based on historical data or a live
+///  feed of real-time data.
 const FeedMode = enum {
   DB,
   Live
 };
 
+/// Process Execution Mode
+///   defines the type of process the engine must run. Changing this will
+///   affect how inputs are used and output is provided.
 const ExecMode = enum {
   LiveExecution,
   Backtest,
   Optimization,
 };
 
+/// Engine Map (Configuration File)
+///   provides required information for system to locate and load inputs
+///   as well as instructions for process & execution.
 pub const Map = struct {
   alloc: std.mem.Allocator,
   auto: []const u8,
@@ -25,7 +34,7 @@ pub const Map = struct {
   exec_mode: ExecMode,
 
   /// Initialize a map instance
-  /// Decode a map.json into a Map struct, usable by an Engine.
+  ///   Decode a map.json into a Map struct, usable by an Engine.
   pub fn init(alloc: std.mem.Allocator, map_path: []const u8) !Map {
 
     const file = try std.fs.cwd().openFile(map_path, .{});
@@ -53,6 +62,7 @@ pub const Map = struct {
     };
   }
 
+  /// Deinitialize map instance
   pub fn deinit(self: *Map) void {
     self.alloc.free(self.auto);
     self.alloc.free(self.db);
