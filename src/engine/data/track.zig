@@ -15,6 +15,7 @@ pub const Track = struct {
   vo: std.ArrayListUnmanaged(u64),
 
   /// Initialize an empty Track instance
+  ///   Generate size and six empty arraylist fields for timestamp, OHLCV values.
   pub fn init() Track {
     return Track{
       .size = 0,
@@ -28,8 +29,8 @@ pub const Track = struct {
     }
 
   /// Load an empty Track with db_handle data form t0 to tn
-  ///   Generates a SQLite3 query, iterates through specifies row range, appends each data point
-  ///   to their respecitve arraylist while keeping a common index per data point.
+  ///   Generates a SQLite3 query, iterates through specifies row range, appends each 
+  ///   data point to their respecitve arraylist while keeping a common index per data point.
   pub fn load(self: *Track, alloc: std.mem.Allocator, db_handle: *anyopaque, 
               table: []const u8, t0: u64, tn: u64) !void {
 
@@ -72,7 +73,7 @@ pub const Track = struct {
   }
 
   /// Deinitalize Track Instance
-  ///   Frees ts, op, hi, lo, cl, vo arrays
+  ///   Frees ts, op, hi, lo, cl, vo arraylists.
   pub fn deinit(self: *Track, alloc: std.mem.Allocator) void {
     self.ts.deinit(alloc);
     self.op.deinit(alloc);
