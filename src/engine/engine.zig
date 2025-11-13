@@ -4,11 +4,12 @@ const Track = @import("data/track.zig").Track;
 const Trail = @import("data/trail.zig").Trail;
 const Map   = @import("config/map.zig").Map;
 
-const path = @import("../utils/path.zig");
-
 // Runtime Auto Load
 const auto_loader = @import("auto/loader.zig");
 const Auto = auto_loader.LoadedAuto;
+
+// Utilities
+const path_util = @import("../utils/path.zig");
 
 pub const Engine = struct {
   alloc: std.mem.Allocator,
@@ -17,8 +18,18 @@ pub const Engine = struct {
   track: Track,
   trail: Trail,
 
+  /// Initialize an engine Instance
+  ///   - Reads & saves process configs
+  ///   - Loads DB into Track
+  ///   - Loads initial Trail
+  ///   - Loads Compiled Auto
   pub fn init(alloc: std.mem.Allocator, map_path: []const u8) !Engine {
-    const decoded_map: Map = try Map.init(alloc, map_path);
+
+    const map_abs_path = try path_util.mapRelPathToAbsPath(alloc, map_path);
+    defer alloc.free(map_abs_path);
+    
+    var decoded_map: Map = try Map.init(alloc, map_abs_path);
+    errdefer {decoded_map.deinit();}
 
     const db_handle: *anyopaque = try db.openDB(decoded_map.db);
     var track: Track = Track.init();
@@ -26,16 +37,9 @@ pub const Engine = struct {
     var trail: Trail = try Trail.init(alloc, decoded_map.trail_size);
     try trail.load(track, 0);
     try db.closeDB(db_handle);
+    errdefer {track.deinit(alloc); trail.deinit(alloc);}
     
-    // MEMORY LEAK
-    //const map_abs = try path.absFromExe(alloc, decoded_map.auto);
-    //defer alloc.free(map_abs);
-
-    //const abs_auto_path: []const u8 = try path.relToFileDir(alloc, map_abs, decoded_map.auto);
-    //defer alloc.free(abs_auto_path);
-
     const auto: Auto = try auto_loader.load_from_file(alloc, decoded_map.auto);  
-    //defer alloc.free(auto);
 
     return Engine{
       .alloc = alloc, .map = decoded_map,

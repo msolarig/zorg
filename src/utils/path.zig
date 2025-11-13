@@ -1,51 +1,54 @@
 const std = @import("std");
 
-/// Returns the absolute path for `p`.
-/// If `p` is absolute: returns a dup of it.
-/// If relative: resolves it against the executable's directory.
-/// Caller must free the returned slice.
-pub fn absFromExe(a: std.mem.Allocator, p: []const u8) ![]u8 {
-    if (std.fs.path.isAbsolute(p))
-        return try std.mem.Allocator.dupe(a, u8, p);
-
+/// Get the root directory's absolute system path
+pub fn getProjectRootPath(alloc: std.mem.Allocator) ![]u8 {
     var buf: [std.fs.max_path_bytes]u8 = undefined;
     const exe_path = try std.fs.selfExePath(&buf);
 
-    // replicate dirnameAlloc manually
-    const dir = blk: {
-        const d = std.fs.path.dirname(exe_path) orelse ".";
-        break :blk try std.mem.Allocator.dupe(a, u8, d);
-    };
-    defer a.free(dir);
+    const bin_dir = std.fs.path.dirname(exe_path) orelse return error.BadExePath;
+    const zig_out_dir = std.fs.path.dirname(bin_dir) orelse return error.BadExePath;
+    const project_root = std.fs.path.dirname(zig_out_dir) orelse return error.BadExePath;
 
-    return try std.fs.path.join(a, &.{ dir, p });
+    return try alloc.dupe(u8, project_root);
 }
 
-/// Resolve `child` relative to the directory containing `anchor_file_abs`.
-/// If `child` is absolute, just dup it.
-pub fn relToFileDir(a: std.mem.Allocator, anchor_file_abs: []const u8, child: []const u8) ![]u8 {
-    if (std.fs.path.isAbsolute(child))
-        return try std.mem.Allocator.dupe(a, u8, child);
+/// Converts "usr/maps/MAP.json" to its absolute system path
+pub fn mapRelPathToAbsPath(alloc: std.mem.Allocator, map_path: []const u8) ![]const u8 {
+  const file_name = std.fs.path.basename(map_path);
+  if (!std.mem.endsWith(u8, file_name, ".json"))
+        return error.InvalidFileType;
 
-    const dir = std.fs.path.dirname(anchor_file_abs) orelse ".";
-    return try std.fs.path.join(a, &.{ dir, child });
+  const root_abs_path = try getProjectRootPath(alloc);
+  defer alloc.free(root_abs_path);
+    
+  std.debug.print("{s}/usr/maps/{s}\n", .{root_abs_path, file_name});
+  return try std.fmt.allocPrint(alloc, "{s}/usr/maps/{s}", .{root_abs_path, file_name});
 }
 
-/// macOS-only helper: converts "usr/autos/XYZ.zig" -> "<exe_dir>/zig-out/usr/autos/XYZ.dylib"
-pub fn autoSrcToCompiledAbs(a: std.mem.Allocator, src_rel_or_abs: []const u8) ![]u8 {
-    const base = std.fs.path.basename(src_rel_or_abs);
-    if (!std.mem.endsWith(u8, base, ".zig"))
-        return error.NotZigSource;
+/// Converts "usr/autos/AUTO.zig" to its absolute system path
+pub fn autoSrcRelPathToCompiledAbsPath(alloc: std.mem.Allocator, auto_path: []const u8) ![]const u8 {
+  const file_name = std.fs.path.basename(auto_path);
+  if (!std.mem.endsWith(u8, file_name, ".zig"))
+        return error.InvalidFilePath;
 
-    const stem = base[0 .. base.len - ".zig".len];
+  const file_stem = file_name[0 .. file_name.len - ".zig".len];
 
-    var buf: [std.fs.MAX_PATH_BYTES]u8 = undefined;
-    const exe_path = try std.fs.selfExePath(&buf);
-    const dir = blk: {
-        const d = std.fs.path.dirname(exe_path) orelse ".";
-        break :blk try std.mem.dupe(a, u8, d);
-    };
-    defer a.free(dir);
+  const root_abs_path = try getProjectRootPath(alloc);
+  defer alloc.free(root_abs_path);
+    
+  std.debug.print("{s}/zig-out/usr/autos/{s}.dylib\n", .{root_abs_path, file_stem});
+  return try std.fmt.allocPrint(alloc, "{s}/zig-out/usr/autos/{s}.dylib", .{root_abs_path, file_stem});
+}
 
-    return try std.fmt.allocPrint(a, "{s}/zig-out/usr/autos/{s}.dylib", .{ dir, stem });
+/// Converts "usr/data/DB.db" to its absolute system path
+pub fn dbRelPathToAbsPath(alloc: std.mem.Allocator, db_path: []const u8) ![]const u8 {
+  const file_name = std.fs.path.basename(db_path);
+  if (!std.mem.endsWith(u8, file_name, ".db"))
+    return error.InvalidFilePath;
+
+  const root_abs_path = try getProjectRootPath(alloc);
+  defer alloc.free(root_abs_path);
+
+ std.debug.print("{s}/usr/data/{s}\n", .{root_abs_path, file_name});
+ return try std.fmt.allocPrint(alloc, "{s}/usr/data/{s}", .{root_abs_path, file_name});
 }

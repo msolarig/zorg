@@ -1,9 +1,10 @@
 {
   "auto": "usr/autos/test_auto.zig",
-  "db": "data/market.db",
+  "feed_mode": "DB",
+  "db": "usr/data/market.db",
   "table": "AJG_1D",
   "t0": 1704153600,
   "tn": 1707350400,
   "trail_size": 10,
-  "mode": "Backtest"
+  "exec_mode": "Backtest"
 }

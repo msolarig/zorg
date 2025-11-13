@@ -1,7 +1,13 @@
 const std = @import("std");
 const db = @import("../data/db_wrap.zig");
+const path_util = @import("../../utils/path.zig");
 
-const Mode = enum {
+const FeedMode = enum {
+  DB,
+  Live
+};
+
+const ExecMode = enum {
   LiveExecution,
   Backtest,
   Optimization,
@@ -10,13 +16,13 @@ const Mode = enum {
 pub const Map = struct {
   alloc: std.mem.Allocator,
   auto: []const u8,
+  feed_mode: FeedMode,
   db: []const u8,
   table: []const u8,
   t0: u64,
   tn: u64,
   trail_size: u64,
-  mode: Mode,
-
+  exec_mode: ExecMode,
 
   // Decode a map.json into a Map struct, usable by an Engine.
   pub fn init(alloc: std.mem.Allocator, map_path: []const u8) !Map {
@@ -27,33 +33,23 @@ pub const Map = struct {
     defer alloc.free(json_bytes);
 
     const MapPlaceHolder = struct {
-      auto: []const u8, db: []const u8, table: []const u8, 
-      t0: u64, tn: u64, trail_size: u64, mode: Mode,};
+      auto: []const u8, feed_mode: FeedMode, db: []const u8, table: []const u8, 
+      t0: u64, tn: u64, trail_size: u64, exec_mode: ExecMode,};
 
-    var parsed_map = try std.json.parseFromSlice(
-          MapPlaceHolder, alloc, json_bytes, .{});
+    var parsed_map = try std.json.parseFromSlice(MapPlaceHolder, alloc, json_bytes, .{});
     defer parsed_map.deinit();
-
-    const decoded_map = parsed_map.value;
 
     return Map{
       .alloc = alloc,
-      .auto  = try autoSrcPathToCompiledBinPath(alloc, decoded_map.auto),
-      .db    = try alloc.dupe(u8, decoded_map.db),
-      .table = try alloc.dupe(u8, decoded_map.table),
-      .t0 = decoded_map.t0,
-      .tn = decoded_map.tn,
-      .trail_size = decoded_map.trail_size,
-      .mode = decoded_map.mode,
+      .auto  = try path_util.autoSrcRelPathToCompiledAbsPath(alloc, parsed_map.value.auto),
+      .feed_mode = parsed_map.value.feed_mode,
+      .db    = try path_util.dbRelPathToAbsPath(alloc, parsed_map.value.db),
+      .table = try alloc.dupe(u8, parsed_map.value.table),
+      .t0 = parsed_map.value.t0,
+      .tn = parsed_map.value.tn,
+      .trail_size = parsed_map.value.trail_size,
+      .exec_mode = parsed_map.value.exec_mode,
     };
-  }
-
-  pub fn autoSrcPathToCompiledBinPath(alloc: std.mem.Allocator, src_path: []const u8) ![]const u8 {
-    const base = std.fs.path.basename(src_path);
-    if (!std.mem.endsWith(u8, base, ".zig")) return error.NotZigSource;
-
-    const stem = base[0 .. base.len - ".zig".len];
-    return try std.fmt.allocPrint(alloc, "zig-out/usr/autos/{s}.dylib", .{stem});
   }
 
   pub fn deinit(self: *Map) void {
