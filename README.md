@@ -71,7 +71,7 @@ independent from the main program by simply typing the auto dir name.
 
 ## Simple Interface
 
-Just provide an map (config file) and the engine will assemble itself! loading into memory the desired auto, 
+Just provide a map (config file) and the engine will assemble itself! loading into memory the desired auto, 
 database, and required configs to run a custom process.
 
 ![Alt text](/assets/readme/screenshots/ss_tui.png?raw=true "ss_tui")
