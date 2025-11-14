@@ -1,6 +1,6 @@
 const std    = @import("std");
-const db     = @import("../engine/data/db_wrap.zig");
-const Track  = @import("../engine/data/track.zig").Track;
+const db     = @import("../engine/data/sql_wrap.zig");
+const Track  = @import("../engine/data/local_data.zig").Track;
 
 test "MONO_TABLE_DB_TRACK_TESTS" {
 

@@ -1,6 +1,6 @@
 const std = @import("std");
-const db = @import("../data/db_wrap.zig");
-const path_util = @import("../../utils/path.zig");
+const db = @import("../data/sql_wrap.zig");
+const path_util = @import("../../utils/path_converter.zig");
 
 /// Data Feed Mode
 ///  defines whether an Engine works based on historical data or a live
