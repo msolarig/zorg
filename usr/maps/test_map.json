@@ -1,6 +1,6 @@
 {
   "auto": "test_auto.zig",
-  "feed_mode": "DB",
+  "feed_mode": "SQLite3",
   "db": "market.db",
   "table": "AJG_1D",
   "t0": 0,

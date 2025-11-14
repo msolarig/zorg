@@ -12,14 +12,29 @@ pub fn main() !void {
   var stdout_buffer: [1024]u8 = undefined;
   var stdout_writer = std.fs.File.stdout().writer(&stdout_buffer);
   const stdout = &stdout_writer.interface;
+  
+  // Reader
+  var stdin_buffer: [1024]u8 = undefined;
+  var stdin_reader = std.fs.File.stdin().reader(&stdin_buffer);
+  const stdin = &stdin_reader.interface;
+
+  //-----------------------------------------------------------------------------------------------
+  // ROBERT Loop - Terminal User Interface
+  //-----------------------------------------------------------------------------------------------
 
   try stdout.print("\x1B[2J\x1B[H", .{});
   try stdout.print("ROBERT! \nThe Robotic Execution & Research Terminal\n", .{});
   try stdout.print("————————————————————————————————————————————————————\n\n", .{});
-  try stdout.print("\x1b[31mRUNTIME LOG:\n\x1b[0m", .{});
+  try stdout.flush();
+  
+  try stdout.print("Engine-Map File: ", .{});
+  try stdout.flush();
+  const engine_map = try stdin.takeDelimiterExclusive('\n');
+
+  try stdout.print("\n\x1b[31mRUNTIME LOG:\n\x1b[0m", .{});
   try stdout.flush();
 
-  var engine: Engine = try Engine.init(alloc, "test_map_2.json");
+  var engine = try Engine.init(alloc, engine_map);
   defer engine.deinit();
 
   try stdout.print("\x1b[31mEngine Details:\n\x1b[0m", .{});
