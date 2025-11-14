@@ -22,12 +22,6 @@ pub const Engine = struct {
   ///   Reads & saves process configs.
   ///   Loads Track, Trail, compiled Auto.
   pub fn init(alloc: std.mem.Allocator, map_path: []const u8) !Engine {
-    const start_time = std.time.nanoTimestamp();
-    var elapsed_time_ms: f64 = undefined;
-
-    std.debug.print("Assembling Engine\n", .{});
-    defer std.debug.print("Engine Assembled Successfully in {d}ms!\n\n", .{elapsed_time_ms});
-
     const map_abs_path = try path_util.mapRelPathToAbsPath(alloc, map_path);
     defer alloc.free(map_abs_path);
 
@@ -35,26 +29,15 @@ pub const Engine = struct {
     errdefer {decoded_map.deinit();}
     
     const db_handle: *anyopaque = try db.openDB(decoded_map.db);
-
-    std.debug.print("Loading Track [{d} through {d}]\n", .{decoded_map.t0, decoded_map.tn});
     var track: Track = Track.init();
     try track.load(alloc, db_handle, decoded_map.table, decoded_map.t0, decoded_map.tn);
-
-    std.debug.print("Loading Trail [{d} Data Points]\n", .{decoded_map.trail_size});
     var trail: Trail = try Trail.init(alloc, decoded_map.trail_size);
     try trail.load(track, 0);
-
     try db.closeDB(db_handle);
 
     errdefer {track.deinit(alloc); trail.deinit(alloc);}
     
-    std.debug.print("Loading Auto from {s}\n", .{decoded_map.auto});
     const auto: Auto = try loader.load_from_file(alloc, decoded_map.auto);  
-
-    const end_time = std.time.nanoTimestamp();
-    const elapsed_time_ns = end_time - start_time;    
-    const elapsed_time_ns_float: f64 = @floatFromInt(elapsed_time_ns);
-    elapsed_time_ms = elapsed_time_ns_float / 1_000_000;
 
     return Engine{
       .alloc = alloc, .map = decoded_map,

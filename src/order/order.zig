@@ -2,7 +2,7 @@ const OrderDirection = enum { Buy, Sell };
 const OrderType = enum { Market, Stop, Limit };
 const OrderTimeInForce = enum { Day, GoodTillCancel };
 const OrderTimeCondition = enum { ImmediateOrCancel, FillOrKill };
-const OrderStatus = enum { Submitted, Working, Filled, Canceled, Rejected, Expired };
+const OrderStatus = enum { Inactive, Submitted, Working, Filled, Canceled, Rejected, Expired };
 
 const Order = struct {
   instrument: []const u8,
@@ -30,7 +30,7 @@ const Order = struct {
       .volume = volume,
       .time_in_force = time_in_force,
       .time_condition = time_condition,
-      .status = .Submitted,
+      .status = .Inactive,
     };
   }
 };

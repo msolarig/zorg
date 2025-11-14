@@ -46,10 +46,6 @@ pub const Map = struct {
   /// Initialize a Map instance
   ///   Decodes a map.json into a Map struct, usable by an Engine.
   pub fn init(alloc: std.mem.Allocator, map_path: []const u8) MapError!Map {
-
-    std.debug.print("Reading Engine Map @ {s}\n", .{map_path});
-    defer std.debug.print("Engine Map Read Successfully!\n", .{});
-
     const file = std.fs.cwd().openFile(map_path, .{}) catch |err| switch (err) {
       error.FileNotFound => return error.MapFileNotFound,
       error.IsDir        => return error.MapFileNotFound,
