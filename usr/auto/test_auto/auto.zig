@@ -27,7 +27,7 @@ fn autoLogicFunction(iter_index: u64, trail: *const abi.TrailABI) callconv(.c) v
   // Basic auto logic
   if (iter_index >= minimum_required_data_points) {
     if (trail.op[0] < trail.op[1] and trail.cl[0] > trail.cl[1] and trail.cl[1] < trail.op[0])
-      //std.debug.print("{d:03}|{d}: BUY @ {d:.2}\n", .{iter_index, trail.ts[0], trail.cl[0]});
+      std.debug.print("  SAMPLE AUTO LOG: {d:03}|{d}: BUY @ {d:.2}\n", .{iter_index, trail.ts[0], trail.cl[0]});
       return;
   }
 } 

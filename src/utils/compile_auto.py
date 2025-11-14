@@ -13,3 +13,5 @@ cmd = [
 ]
 
 sp.run(cmd)
+
+print(f"Succesfully Compiled Auto: robert/zig-out/bin/auto/{src_file_name}.dylib")
