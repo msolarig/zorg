@@ -1,84 +1,97 @@
 # *ROBERT*
 
 ![Static Badge](https://img.shields.io/badge/Zig-0.15.2-orange)
-![Static Badge](https://img.shields.io/badge/Python-3.13-blue)
+![Static Badge](https://img.shields.io/badge/Python-3.13-blue) 
+![Static Badge](https://img.shields.io/badge/Support_For_macOS-26-purple)
 
+A blazing fast, modular environment for designing, testing, and executing algorithmic trading models (in Zig!). ROBERT brings a different approach to the space of financial development environments, one in which the user has full control of every process, all from one file!
 
-## All in One Config
+Features:
+  - Design custom Engines with the specialized Engine-Map system.
+  - Build algorithms with ROBlang, leveraging Zig's speed and control
+  - Save input databases or connect a to a live API (soon)
 
-Specify every aspect of your custom process into a single JSON file. From input paths to execution modes
-and output type (Soon).
+With ROBERT, all you need to do is pass one file, a single Engine-Map.json containing the adress to your auto (algorithm) and database, alongside all the settings you require in order to assemble your custom ready-to-work Engine.
 
-![Alt text](/assets/readme/screenshots/ss_map.png?raw=true "ss_map")
+## The Engine Map
 
-## Fast Algorithms
+All you need to do is pass one file, a single Engine-Map.json containing the adress to your auto and database, alongside all the settings you require in order to assemble your custom ready-to-work Engine.
 
-ROBERT's Autos allow the use of a fast set of functions and tools to build performing, self-contained 
-market execution algorithms. Here is a common template in the current (early) dev stage.
-
-```zig
-
-const std = @import("std");
-const abi = @import("abi.zig");
-
-/// Auto Export Function
-///   Provides ROBERT with an interface to access the compiled AUTO.
-///   Update name & description. Do not modify ABI struct insance declaration. 
-pub export fn getAutoABI() callconv(.c) *const abi.AutoABI {
-  const NAME: [*:0]const u8 = "TEST_AUTO";
-  const DESC: [*:0]const u8 = "TEST_AUTO_DESCRIPTION";
-
-  const ABI = abi.AutoABI{
-    .name = NAME,
-    .desc = DESC,
-    .logic_function = autoLogicFunction,
-    .deinit = deinit,
-  };
-  return &ABI;
-}
-
-// Custom Auto variables & methods ------------------------
-const minimum_required_data_points: u64 = 2;
-// --------------------------------------------------------
-
-/// Execution Function
-///   Called once per update in data feed.
-fn autoLogicFunction(iter_index: u64, trail: *const abi.TrailABI) callconv(.c) void {
-  // Basic auto logic
-  if (iter_index >= minimum_required_data_points) {
-    if (trail.op[0] < trail.op[1] and trail.cl[0] > trail.cl[1] and trail.cl[1] < trail.op[0])
-      std.debug.print("  SAMPLE AUTO LOG: {d:03}|{d}: BUY @ {d:.2}\n", .{iter_index, trail.ts[0], trail.cl[0]});
-      return;
-  }
-} 
-
-/// Deinitialization Function
-///  Called once by the engine at the end of the process. 
-///  Include any allocated variables inside to avoid memory leak errors.
-fn deinit() callconv(.c) void {
-  //std.debug.print("Auto Deinitialized\n", .{});
-  return;
-}
+Sample Engine-Map.json:
 
 ```
+{
+  "auto": "test_auto",          // Auto address (usr/auto/)
+  "feed_mode": "SQLite3",       // Database? Live?
+  "db": "market.db",            // DB address (usr/data/)
+  "table": "AJG_1D",            // Table name (usr/data/DB.db/)
+  "t0": 0,                      // First data point to load
+  "tn": 2000000000,             // Last data point to load
+  "trail_size": 10,             // Auto Look-Back-Period
+  "exec_mode": "Backtest"       // Backest? Optimize? Route?
+}
+```
+ROBERT will read this file and assemble a full-on engine, with direct connection to the specified inputs and configurations. Do not worry about paths! He knows where your files are, just make sure to drop them on the usr/ directory, in their respective groups.
 
-## Compile Autos
+## Self Contained Algorithms
 
-Through a custom ABI and with the help of a custom python utility, you can compile you auto projects 
-independent from the main program by simply typing the auto dir name.
+With ROBlang and a custom C ABI, each auto is its own small project with a an entry point, an abi key matching the engine's, and support for any helper indicators, scripts, and any other extra dependencies.
 
-![Alt text](/assets/readme/screenshots/ss_autocomp.png?raw=true "ss_autocomp")
+```
+ANY_GIVEN_AUTO/
+│
+├─ auto.zig                     Entry Point 
+├─ abi.zig                      ABI - Engine Key!
+│
+├─ ind/                         Self Contained Indicators
+│   ├─ vwap.zig
+│   ├─ ts.zig
+│   └─ ...
+│
+├─ sup/                         Supporting Functions 
+│   ├─ calc_risk.zig
+│   └─ ...
+├─ dep/                         Extra dependencies
+    ├─ fun_interpreter.zig
+    └─ ...
+```
+Once you have a working auto, you can compile it independently. Just call the custom compiler utility.
+
+```zsh
+python3 src/utils/compile_auto.py
+```
+Ready! the usr/auto/AUTO will be compiled automatically. The best part is, you only need to pass the name of the auto dir/ and he will now where to find the compiled binary when assembling a new Engine. 
 
 ## Simple Interface
 
-Just provide a map (config file) and the engine will assemble itself! loading into memory the desired auto, 
-database, and required configs to run a custom process.
+For now, ROBERT has a straightforward, script like ui. Simply answer the prompt with a map.json and the engine will be assembled automatically and provide some details. 
 
-![Alt text](/assets/readme/screenshots/ss_tui.png?raw=true "ss_tui")
+Here is an example with a basic auto that prints to the screen when it finds a specific pattern in the data:
 
-## Contributions
+```zsh
+┌─────────────────────────────────────────────────────────────┐
+│ ROBERT  / Robotic Execution & Research Terminal /
+└─────────────────────────────────────────────────────────────┘
+  ENGINE MAP › map.json  <- ONLY USER INPUT
 
-if you are interested in this project, take a look at the source code and feel free to suggest ideas, fork and PR.
+  ENGINE ASSEMBLED | 219ms |
+    exec: .Backtest
+    auto: /robert/zig-out/bin/auto/test_auto.dylib
+    feed: /robert/usr/data/market.db
+
+  EXECUTING PROCESS…
+  LONG INITIATED @ iter 090 | close=247.71
+  LONG INITIATED @ iter 135 | close=269.12
+  LONG INITIATED @ iter 142 | close=280.74
+  LONG INITIATED @ iter 144 | close=282.14
+  LONG INITIATED @ iter 182 | close=279.77
+  LONG INITIATED @ iter 191 | close=287.30
+  DONE
+```
+
+## Contribution
+
+if you are interested in this project, please take a look at the source code and feel free to suggest ideas, fork and PR.
 
 ## License
 
