@@ -1,6 +1,6 @@
 const std = @import("std");
 const builtin = @import("builtin");
-const abi = @import("abi.zig");
+const abi = @import("../../roblang/abi.zig");
 
 pub const LoadedAuto = struct {
   allocator: std.mem.Allocator,
@@ -8,9 +8,10 @@ pub const LoadedAuto = struct {
   lib: std.DynLib,
   api: *const abi.AutoABI,
 
-  pub fn AutoLogicFunction(self: *LoadedAuto, iter_index: u64, trail: abi.TrailABI) void {
-    self.api.logic_function(iter_index, &trail);
-  }
+  pub const AutoLogicFn = *const fn (
+    iter_index: u64,
+    inputs: *const abi.Inputs,
+  ) callconv(.C) abi.InstructionPacket;
 
   pub fn deinit(self: *LoadedAuto) void {
     self.api.deinit();

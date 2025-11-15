@@ -1,6 +1,6 @@
 const std = @import("std");
 const db = @import("sql_wrap.zig");
-const abi = @import("../auto/abi.zig");
+const abi = @import("../../roblang/trail.zig");
 
 /// Process Historical Database
 ///   Engine reads a DB, t0, and tn from its map. Loads a Track with
