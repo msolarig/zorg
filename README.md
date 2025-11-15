@@ -3,27 +3,17 @@
 ![Static Badge](https://img.shields.io/badge/Zig-0.15.2-orange)
 ![Static Badge](https://img.shields.io/badge/Python-3.13-blue)
 
-### The Robotic Execution & Research Terminal
-
-An Open-Source Engine Made to Build, Test, and Live-Execute Finacial Algorithms! 
-
-![Alt text](/assets/readme/diagrams/planned_structure.png?raw=true "Planned Structure")
 
 ## All in One Config
 
 Specify every aspect of your custom process into a single JSON file. From input paths to execution modes
 and output type (Soon).
 
-## Simple Interface
-
-Just provide an engine map and the engine will assemble itself! loading into memory the desired auto, 
-database, and required configs to run a custom process.
-
-![Alt text](/assets/readme/screenshots/ss_tui.png?raw=true "ss_tui")
+![Alt text](/assets/readme/screenshots/ss_map.png?raw=true "ss_map")
 
 ## Fast Algorithms
 
-ROBERT's Autos allow the use of a fast set of functions and tools to build performin, self-contained 
+ROBERT's Autos allow the use of a fast set of functions and tools to build performing, self-contained 
 market execution algorithms. Here is a common template in the current (early) dev stage.
 
 ```zig
@@ -78,6 +68,13 @@ Through a custom ABI and with the help of a custom python utility, you can compi
 independent from the main program by simply typing the auto dir name.
 
 ![Alt text](/assets/readme/screenshots/ss_autocomp.png?raw=true "ss_autocomp")
+
+## Simple Interface
+
+Just provide a map (config file) and the engine will assemble itself! loading into memory the desired auto, 
+database, and required configs to run a custom process.
+
+![Alt text](/assets/readme/screenshots/ss_tui.png?raw=true "ss_tui")
 
 ## Contributions
 
