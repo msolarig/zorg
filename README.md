@@ -21,7 +21,7 @@ All you need to do is pass one file, a single Engine-Map.json containing the adr
 
 Sample Engine-Map.json:
 
-```
+```json
 {
   "auto": "test_auto",          // Auto address (usr/auto/)
   "feed_mode": "SQLite3",       // Database? Live?
