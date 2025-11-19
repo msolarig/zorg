@@ -1,5 +1,6 @@
 const std = @import("std");
 const db = @import("../data/sql_wrap.zig");
+const json_util = @import("../../utils/clean_json.zig").cleanJSON; 
 const path_util = @import("../../utils/path_converter.zig");
 
 /// Data Feed Mode
@@ -22,16 +23,17 @@ pub const Map = struct {
     trail_size: u64,
     exec_mode: ExecMode,
 
-    /// Initialize a Map instance
-    ///   Decodes a map.json into a Map struct, usable by an Engine.
     pub fn init(alloc: std.mem.Allocator, map_path: []const u8) !Map {
-        const file = try std.fs.cwd().openFile(map_path, .{});
+        var file = try std.fs.cwd().openFile(map_path, .{});
         defer file.close();
 
-        const json_bytes = try file.readToEndAlloc(alloc, std.math.maxInt(usize));
+        const file_bytes = try file.readToEndAlloc(alloc, std.math.maxInt(usize));
+        defer alloc.free(file_bytes);
+
+        const json_bytes = try json_util.stripComments(alloc, file_bytes);
         defer alloc.free(json_bytes);
 
-        const MapPlaceHolder = struct {
+        const MapPlaceholder = struct {
             auto: []const u8,
             feed_mode: FeedMode,
             db: []const u8,
@@ -42,10 +44,10 @@ pub const Map = struct {
             exec_mode: ExecMode,
         };
 
-        var parsed = try std.json.parseFromSlice(MapPlaceHolder, alloc, json_bytes, .{});
+        var parsed = try std.json.parseFromSlice(MapPlaceholder, alloc, json_bytes, .{});
         defer parsed.deinit();
 
-        var result = Map{
+        var map = Map{
             .alloc = alloc,
             .auto = undefined,
             .feed_mode = parsed.value.feed_mode,
@@ -56,17 +58,15 @@ pub const Map = struct {
             .trail_size = parsed.value.trail_size,
             .exec_mode = parsed.value.exec_mode,
         };
-        errdefer result.deinit();
+        errdefer map.deinit();
 
-        result.auto = try path_util.autoSrcRelPathToCompiledAbsPath(alloc, parsed.value.auto);
-        result.db = try path_util.dbRelPathToAbsPath(alloc, parsed.value.db);
-        result.table = try alloc.dupe(u8, parsed.value.table);
+        map.auto = try path_util.autoSrcRelPathToCompiledAbsPath(alloc, parsed.value.auto);
+        map.db = try path_util.dbRelPathToAbsPath(alloc, parsed.value.db);
+        map.table = try alloc.dupe(u8, parsed.value.table);
 
-        return result;
+        return map;
     }
 
-    /// Deinitialize map instance
-    ///   Frees auto path, db path, table name.
     pub fn deinit(self: *Map) void {
         self.alloc.free(self.auto);
         self.alloc.free(self.db);

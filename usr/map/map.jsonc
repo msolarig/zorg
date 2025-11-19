@@ -1,0 +1,13 @@
+{
+    //this is a comment
+    // Now ROBERT can read 
+    // jsonc files
+    "auto": "test_auto",
+    "feed_mode": "SQLite3",
+    "db": "market.db",
+    "table": "AJG_1D",
+    "t0": 0,
+    "tn": 2000000000,
+    "trail_size": 10,
+    "exec_mode": "Backtest"
+}

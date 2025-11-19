@@ -36,7 +36,6 @@ fn findExistingFile(alloc: std.mem.Allocator, root_abs: []const u8, file_name: [
             alloc.free(full);
         }
     }
-
     return error.FileNotFound;
 }
 
@@ -45,7 +44,7 @@ fn findExistingFile(alloc: std.mem.Allocator, root_abs: []const u8, file_name: [
 fn resolveAutoDylibPath(alloc: std.mem.Allocator, root_abs: []const u8, zig_file: []const u8) ![]u8 {
     const file_name = std.fs.path.basename(zig_file);
 
-    const stem = file_name[0 .. file_name.len];
+    const stem = file_name[0..file_name.len];
 
     return try std.fmt.allocPrint(alloc, "{s}/zig-out/bin/auto/{s}.dylib", .{
         root_abs,
@@ -58,7 +57,7 @@ fn resolveAutoDylibPath(alloc: std.mem.Allocator, root_abs: []const u8, zig_file
 pub fn mapRelPathToAbsPath(alloc: std.mem.Allocator, map_path: []const u8) ![]const u8 {
     const file_name = std.fs.path.basename(map_path);
 
-    if (!std.mem.endsWith(u8, file_name, ".json"))
+    if (!std.mem.endsWith(u8, file_name, ".json") and !std.mem.endsWith(u8, file_name, ".jsonc"))
         return error.InvalidFileType;
 
     const root_abs = try getProjectRootPath(alloc);

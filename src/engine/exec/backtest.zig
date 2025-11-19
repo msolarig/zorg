@@ -1,36 +1,39 @@
 const std = @import("std");
 const Engine = @import("../engine.zig").Engine;
-const abi = @import("../../roblang/abi.zig");
-const InstructionPacket = @import("../../roblang/wrappers/command.zig").InstructionPacket;
-const OrderManager = @import("../../roblang/core/order/order_manager.zig").OrderManager;
+const abi = @import("../../roblang/abi/abi.zig");
+const InstructionPacket = @import("../../roblang/abi/command.zig").InstructionPacket;
+const Command = @import("../../roblang/abi/command.zig").Command;
+const OM = @import("../../roblang/core/order.zig").OrderManager;
+const PM = @import("../../roblang/core/position.zig").PositionManager;
 const controller = @import("../../roblang/controller.zig");
+const writer = @import("../../engine/out/csv_writer.zig");
 
-/// Perform Backtest
 pub fn runBacktest(engine: *Engine) !void {
+    var om: OM = OM.init();
+    var pm: PM = PM.init();
+    //TODO: INITIALIZE ACCOUNT. Should be an engine field, passed by the map
 
-    var om: OrderManager = OrderManager.init();
-    //pm = POSITION MANAGER
-    //acc = ACCOUNT
+    defer om.deinit(engine.alloc);
+    defer pm.deinit(engine.alloc);
 
     // Temporary stub until account system connected
-    var account_instance = abi.AccountABI{
-        .equity = 0,
-        .unrealized_pnl = 0,
-        .realized_pnl = 0,
-        .margin_used = 0,
-    };
-    
+    var account_instance = abi.AccountABI{};
+
     // Temporary postion stub
     const positions_ptr: ?[*]const abi.PositionABI = null;
     const position_count: u64 = 0;
 
     // Execution Loop
-    // Iterates through track, calling auto and updating the trail repeatedly
+    // Iterate through track, calling auto and updating the trail repeatedly
     for (0..engine.track.size) |i| {
         try engine.trail.load(engine.track, i);
         const trail_abi = engine.trail.toABI();
 
-        var inputs = abi.Inputs{
+        // Iterate through working orders.
+        // Execute if possible
+        try pm.evaluateWorkingOrders(engine.alloc, &om);
+
+        var inputs = abi.Inputs{ // update with new PM implementaion TODO
             .trail = &trail_abi,
             .account = &account_instance,
             .positions = positions_ptr,
@@ -40,4 +43,9 @@ pub fn runBacktest(engine: *Engine) !void {
         const pkt: InstructionPacket = engine.auto.api.logic(i, &inputs);
         try controller.ExecuteInstructionPacket(engine.alloc, pkt, &om);
     }
+
+    // Simple CSV Output with position history
+    const out_file_name: []const u8 = "result.csv";
+    try writer.writePositionsCSV(&pm, out_file_name);
+    std.debug.print("  Saved results to {s}\n", .{out_file_name});
 }

@@ -14,6 +14,7 @@ const Style = struct {
 };
 
 pub fn main() !void {
+
     // Allocator
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
@@ -43,15 +44,18 @@ pub fn main() !void {
     );
     try stdout.flush();
     const engine_map = try stdin.takeDelimiterExclusive('\n');
+    
+    // Total Runtime timer
+    const start = std.time.milliTimestamp();
 
     // Initialize Engine (provide map.json)
-    const start = std.time.milliTimestamp();
+    const start1 = std.time.milliTimestamp();
     var engine = try Engine.init(alloc, engine_map);
-    const elapsed = std.time.milliTimestamp() - start;
+    const elapsed1 = std.time.milliTimestamp() - start1;
     defer engine.deinit();
 
     // Display assembled Engine details
-    try stdout.print("\n{s}{s}  ENGINE ASSEMBLED | {d}ms | {s}\n", .{ Style.bold, Style.accent, elapsed, Style.reset });
+    try stdout.print("\n{s}{s}  ENGINE ASSEMBLED{s}\n", .{ Style.bold, Style.accent, Style.reset });
     try stdout.print("{s}    exec:{s} {any}\n", .{ Style.info, Style.reset, engine.map.exec_mode });
     const auto_relative_path = engine.map.auto[std.mem.indexOf(u8, engine.map.auto, "robert/").?..];
     try stdout.print("{s}    auto:{s} /{s}\n", .{ Style.info, Style.reset, auto_relative_path });
@@ -63,9 +67,12 @@ pub fn main() !void {
     try stdout.print("{s}{s}  EXECUTING PROCESS…{s}\n", .{ Style.bold, Style.accent, Style.reset });
     try stdout.flush();
 
+    const start2 = std.time.milliTimestamp();
     try engine.ExecuteProcess();
+    const elapsed2 = std.time.milliTimestamp() - start2;
 
-    try stdout.print("{s}{s}  DONE{s}\n\n", .{ Style.bold, Style.subtle, Style.reset });
+    const elapsed = std.time.milliTimestamp() - start;
+    try stdout.print("{s}{s}  DONE | EA:{d}ms | PE:{d}ms | TR:{d}ms | {s}\n\n", .{ Style.bold, Style.subtle, elapsed1, elapsed2, elapsed, Style.reset });
     try stdout.flush();
 }
 

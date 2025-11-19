@@ -1,6 +1,6 @@
 const std = @import("std");
 const builtin = @import("builtin");
-const abi = @import("../../roblang/abi.zig");
+const abi = @import("../../roblang/abi/abi.zig");
 
 pub const LoadedAuto = struct {
     allocator: std.mem.Allocator,
@@ -20,9 +20,9 @@ pub const LoadedAuto = struct {
     }
 };
 
-pub fn load_from_file(allocator: std.mem.Allocator, auto_file_path: []const u8) !LoadedAuto {
+pub fn load_from_file(gpa: std.mem.Allocator, auto_file_path: []const u8) !LoadedAuto {
     const base = std.fs.path.basename(auto_file_path);
-    if (std.mem.endsWith(u8, base, ".dylib") == false) return error.NotADynamicLibraryName;
+    if (!std.mem.endsWith(u8, base, ".dylib")) return error.NotADynamicLibraryName;
 
     // Open the library
     var lib = try std.DynLib.open(auto_file_path);
@@ -36,8 +36,8 @@ pub fn load_from_file(allocator: std.mem.Allocator, auto_file_path: []const u8) 
     const api = get_api();
 
     // Own a copy of the file path
-    const lib_copy = try std.mem.Allocator.dupe(allocator, u8, auto_file_path);
-    errdefer allocator.free(lib_copy);
+    const lib_copy = try std.mem.Allocator.dupe(gpa, u8, auto_file_path);
+    errdefer gpa.free(lib_copy);
 
-    return .{ .allocator = allocator, .lib_path = lib_copy, .lib = lib, .api = api };
+    return .{ .allocator = gpa, .lib_path = lib_copy, .lib = lib, .api = api };
 }

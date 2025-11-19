@@ -1,13 +1,13 @@
 const std = @import("std");
 
 // Re-export types so the engine can access them
-pub const TrailABI = @import("wrappers/trail.zig").TrailABI;
-pub const AccountABI = @import("wrappers/account.zig").AccountABI;
-pub const PositionABI = @import("wrappers/position.zig").PositionABI;
+pub const TrailABI = @import("trail.zig").TrailABI;
+pub const AccountABI = @import("account.zig").AccountABI;
+pub const PositionABI = @import("position.zig").PositionABI;
 
-// Inputs and commands
-pub const Inputs = @import("wrappers/inputs.zig").AutoInputs;
-pub const InstructionPacket = @import("wrappers/command.zig").InstructionPacket;
+// Auto IO
+pub const Inputs = @import("inputs.zig").AutoInputs;
+pub const InstructionPacket = @import("command.zig").InstructionPacket;
 
 // Function pointer types
 pub const AutoLogicFn = *const fn (
