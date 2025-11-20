@@ -5,6 +5,8 @@ const OrderTimeCondition = @import("../core/order.zig").OrderTimeCondition;
 const OrderStatus = @import("../core/order.zig").OrderStatus;
 
 pub const OrderRequest = extern struct {
+    iter: u64,
+    timestamp: u64,
     direction: OrderDirection,
     order_type: OrderType,
     price: f64,

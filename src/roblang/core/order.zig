@@ -4,13 +4,17 @@ pub const OrderDirection = enum(c_int) { Buy = 1, Sell = -1 };
 pub const OrderType = enum(c_int) { Market = 0, Limit = 1, Stop = 2 };
 
 pub const Order = struct {
+    iter: u64,
+    timestamp: u64,
     type: OrderType,
     side: OrderDirection,
     price: f64,
     volume: f64,
 
-    pub fn init(order_type: OrderType, side: OrderDirection, price: f64, volume: f64) Order {
+    pub fn init(iter: u64, timestamp: u64, order_type: OrderType, side: OrderDirection, price: f64, volume: f64) Order {
         return Order{
+            .iter = iter,
+            .timestamp = timestamp,
             .type = order_type,
             .side = side,
             .price = price,

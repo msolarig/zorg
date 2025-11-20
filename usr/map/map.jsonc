@@ -13,5 +13,9 @@
 
     "account": {
         "balance": 1000.0
+    },
+
+    "output": {
+        "name": "testout"
     }
 }

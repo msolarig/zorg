@@ -10,13 +10,13 @@ pub const TrailABI = extern struct {
 };
 
 pub const AccountABI = extern struct {};
-pub const PositionABI = extern struct {};
+pub const FillABI = extern struct {};
 
 pub const Inputs = extern struct {
     iter: u64,
     trail: *const TrailABI,
     account: *const AccountABI,
-    positions: *const PositionABI,
+    fills: *const FillABI,
 };
 
 // AUTO OUTPUT ABI ------------------------------------------------------------
@@ -25,6 +25,8 @@ pub const OrderDirection = enum(c_int) { Buy = 1, Sell = -1 };
 pub const OrderType = enum(c_int) { Market = 0, Limit = 1, Stop = 2 };
 
 pub const PlaceOrder = extern struct {
+    iter: u64,
+    timestamp: u64,
     direction: OrderDirection,
     order_type: OrderType,
     price: f64,

@@ -25,12 +25,13 @@ const DESC: [*:0]const u8 = "ROBERT SAMPLE AUTO _n1_: A Simple TA Engulfing Algo
 
 const min_required_points: u8 = 2; // Avoid index-out-of-range errors!
 
-
-inline fn submitBuyMkt(pkt: *abi.InstructionPacket, price: f64) void {
+inline fn submitBuyMkt(in: abi.Inputs, pkt: *abi.InstructionPacket, price: f64) void {
     const cmd: abi.Command = .{
         .type = .PlaceOrder,
         .payload = .{
             .place = .{
+                .iter = in.iter,
+                .timestamp = in.trail.ts[0],
                 .direction = .Buy,
                 .order_type = .Market,
                 .price = price,
@@ -46,7 +47,6 @@ inline fn submitBuyMkt(pkt: *abi.InstructionPacket, price: f64) void {
 // AUTO LOGIC FUNCTION (ALF) --------------------------------------------------------------------------------
 
 fn ALF(inputs: abi.Inputs, packet: *abi.InstructionPacket) callconv(.c) void {
-
     const op0: f64 = inputs.trail.op[0];
     const cl0: f64 = inputs.trail.cl[0];
     const op1: f64 = inputs.trail.op[1];
@@ -58,7 +58,7 @@ fn ALF(inputs: abi.Inputs, packet: *abi.InstructionPacket) callconv(.c) void {
 
     if (inputs.iter > min_required_points)
         if (prev_red and cur_green and cur_engulf)
-            submitBuyMkt(packet, op0);
+            submitBuyMkt(inputs, packet, op0);
 }
 
 // ----------------------------------------------------------------------------------------------------------

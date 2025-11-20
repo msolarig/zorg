@@ -12,6 +12,8 @@ pub fn ExecuteInstructionPacket(alloc: std.mem.Allocator, ip: Packet, om: *Order
             .PlaceOrder => {
                 const req = command.payload.place;
                 const order = Order.init(
+                    req.iter,
+                    req.timestamp,
                     req.order_type,
                     req.direction,
                     req.price,

@@ -6,6 +6,7 @@ const Map = @import("config/map.zig").Map;
 const loader = @import("auto/loader.zig");
 const Auto = loader.LoadedAuto;
 const Account = @import("../roblang/core/account.zig").Account;
+const OutputManager = @import("out/output.zig").OutputManager;
 const path_util = @import("../utils/path_converter.zig");
 const backtest = @import("exec/backtest.zig");
 
@@ -19,6 +20,7 @@ pub const Engine = struct {
     acc: Account,
     track: Track,
     trail: Trail,
+    out: OutputManager,
 
     /// Initialize an Engine instance
     ///   Reads & saves process configs.
@@ -45,9 +47,8 @@ pub const Engine = struct {
         }
 
         const auto: Auto = try loader.load_from_file(alloc, decoded_map.auto);
-
-        // Parse account
         const account: Account = decoded_map.account;
+        const out: OutputManager = try OutputManager.init(alloc, decoded_map.output.name);
 
         return Engine{
             .alloc = alloc,
@@ -56,6 +57,7 @@ pub const Engine = struct {
             .acc = account,
             .track = track,
             .trail = trail,
+            .out = out,
         };
     }
 
@@ -80,5 +82,6 @@ pub const Engine = struct {
         self.auto.deinit();
         self.track.deinit(self.alloc);
         self.trail.deinit(self.alloc);
+        self.out.deinit(self.alloc);
     }
 };

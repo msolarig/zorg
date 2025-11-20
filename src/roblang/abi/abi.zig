@@ -3,7 +3,7 @@ const std = @import("std");
 // Re-export types so the engine can access them
 pub const TrailABI = @import("trail.zig").TrailABI;
 pub const AccountABI = @import("account.zig").AccountABI;
-pub const PositionABI = @import("position.zig").PositionABI;
+pub const FillABI = @import("fill.zig").FillABI;
 
 // Auto IO
 pub const Inputs = @import("inputs.zig").AutoInputs;
