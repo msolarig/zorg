@@ -1,4 +1,6 @@
 const std = @import("std");
+const PositionABI = @import("../abi/position.zig").PositionABI;
+const PositionEntryABI = @import("../abi/position.zig").PositionEntryABI;
 const Order = @import("order.zig");
 const OrderManager = @import("order.zig").OrderManager;
 
@@ -21,11 +23,15 @@ pub const Position = struct {
 pub const PositionManager = struct {
     net_state: f64,
     positions: std.ArrayList(Position),
+    abi_buffer: std.ArrayList(PositionEntryABI),
+    abi: PositionABI,
 
     pub fn init() PositionManager {
         return PositionManager{
             .net_state = 0,
             .positions = .{},
+            .abi_buffer = .{},
+            .abi = .{ .ptr = @ptrFromInt(8), .count = 0 },
         };
     }
 
@@ -47,8 +53,31 @@ pub const PositionManager = struct {
         try self.positions.append(gpa, position);
         self.net_state += position.volume;
     }
-    
+
+    /// Convert internal list → ABI struct (pointer + count).
+    pub fn toABI(self: *PositionManager, alloc: std.mem.Allocator) !PositionABI {
+        // rebuild ABI buffer cleanly
+        self.abi_buffer.clearRetainingCapacity();
+
+        for (self.positions.items) |p| {
+            try self.abi_buffer.append(alloc, .{
+                .side = p.side,
+                .price = p.price,
+                .volume = p.volume,
+            });
+        }
+
+        if (self.abi_buffer.items.len == 0)
+            return PositionABI{ .ptr = @ptrFromInt(8), .count = 0 };
+
+        return PositionABI{
+            .ptr = self.abi_buffer.items.ptr,
+            .count = @intCast(self.abi_buffer.items.len),
+        };
+    }
+
     pub fn deinit(self: *PositionManager, alloc: std.mem.Allocator) void {
         self.positions.deinit(alloc);
+        self.abi_buffer.deinit(alloc);
     }
 };

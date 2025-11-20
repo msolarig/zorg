@@ -11,9 +11,9 @@ pub const InstructionPacket = @import("command.zig").InstructionPacket;
 
 // Function pointer types
 pub const AutoLogicFn = *const fn (
-    iter_index: u64,
     inputs: *const Inputs,
-) callconv(.c) InstructionPacket;
+    packet: *InstructionPacket,
+) callconv(.c) void;
 
 pub const AutoDeinitFn = *const fn () callconv(.c) void;
 

@@ -1,6 +1,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const abi = @import("../../roblang/abi/abi.zig");
+const InstructionPacket = @import("../../roblang/abi/command.zig").InstructionPacket;
 
 pub const LoadedAuto = struct {
     allocator: std.mem.Allocator,
@@ -9,9 +10,9 @@ pub const LoadedAuto = struct {
     api: *const abi.AutoABI,
 
     pub const AutoLogicFn = *const fn (
-        iter_index: u64,
         inputs: *const abi.Inputs,
-    ) callconv(.C) abi.InstructionPacket;
+        packet: *InstructionPacket,
+    ) callconv(.C) void;
 
     pub fn deinit(self: *LoadedAuto) void {
         self.api.deinit();

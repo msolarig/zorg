@@ -44,7 +44,7 @@ pub fn main() !void {
     );
     try stdout.flush();
     const engine_map = try stdin.takeDelimiterExclusive('\n');
-    
+
     // Total Runtime timer
     const start = std.time.milliTimestamp();
 

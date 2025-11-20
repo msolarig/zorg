@@ -13,9 +13,10 @@ pub const AccountABI = extern struct {};
 pub const PositionABI = extern struct {};
 
 pub const Inputs = extern struct {
+    iter: u64,
     trail: *const TrailABI,
     account: *const AccountABI,
-    position: *const PositionABI,
+    positions: *const PositionABI,
 };
 
 // AUTO OUTPUT ABI ------------------------------------------------------------
@@ -69,7 +70,7 @@ pub const InstructionPacket = extern struct {
 pub const AutoABI = extern struct {
     name: [*:0]const u8,
     desc: [*:0]const u8,
-    logic: *const fn (u64, Inputs) callconv(.c) InstructionPacket,
+    logic: *const fn (Inputs, *InstructionPacket) callconv(.c) void,
     deinit: *const fn () callconv(.c) void,
 };
 

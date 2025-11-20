@@ -48,7 +48,6 @@ pub const OrderManager = struct {
         return;
     }
 
-
     pub fn deinit(self: *OrderManager, alloc: std.mem.Allocator) void {
         self.orders.deinit(alloc);
         self.orders_working.deinit(alloc);

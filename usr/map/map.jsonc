@@ -9,5 +9,9 @@
     "t0": 0,
     "tn": 2000000000,
     "trail_size": 10,
-    "exec_mode": "Backtest"
+    "exec_mode": "Backtest",
+
+    "account": {
+        "balance": 1000.0
+    }
 }

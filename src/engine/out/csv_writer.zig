@@ -3,7 +3,7 @@ const PositionManager = @import("../../roblang/core/position.zig").PositionManag
 
 pub fn writePositionsCSV(pm: *PositionManager, filename: []const u8) !void {
     var path_buf: [256]u8 = undefined;
-    const full_path = try std.fmt.bufPrint(&path_buf, "usr/out/{s}", .{ filename });
+    const full_path = try std.fmt.bufPrint(&path_buf, "usr/out/{s}", .{filename});
 
     var file = try std.fs.cwd().createFile(full_path, .{ .truncate = true });
     defer file.close();

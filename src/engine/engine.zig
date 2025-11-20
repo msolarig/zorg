@@ -5,6 +5,7 @@ const Trail = @import("data/local_data.zig").Trail;
 const Map = @import("config/map.zig").Map;
 const loader = @import("auto/loader.zig");
 const Auto = loader.LoadedAuto;
+const Account = @import("../roblang/core/account.zig").Account;
 const path_util = @import("../utils/path_converter.zig");
 const backtest = @import("exec/backtest.zig");
 
@@ -15,6 +16,7 @@ pub const Engine = struct {
     alloc: std.mem.Allocator,
     map: Map,
     auto: Auto,
+    acc: Account,
     track: Track,
     trail: Trail,
 
@@ -44,10 +46,14 @@ pub const Engine = struct {
 
         const auto: Auto = try loader.load_from_file(alloc, decoded_map.auto);
 
+        // Parse account
+        const account: Account = decoded_map.account;
+
         return Engine{
             .alloc = alloc,
             .map = decoded_map,
             .auto = auto,
+            .acc = account,
             .track = track,
             .trail = trail,
         };

@@ -9,7 +9,6 @@ pub fn ExecuteInstructionPacket(alloc: std.mem.Allocator, ip: Packet, om: *Order
         const command: Command = ip.commands[instruction_index];
 
         switch (command.command_type) {
-
             .PlaceOrder => {
                 const req = command.payload.place;
                 const order = Order.init(
