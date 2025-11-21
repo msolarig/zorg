@@ -8,7 +8,7 @@ pub const Node = struct {
 };
 
 pub fn buildTreeAlloc(alloc: std.mem.Allocator, path: []const u8) !*Node {
-    var root_dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
+    var dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
 
     const root = try alloc.create(Node);
     root.* = .{
@@ -18,23 +18,22 @@ pub fn buildTreeAlloc(alloc: std.mem.Allocator, path: []const u8) !*Node {
         .children = &.{},
     };
 
-    try loadChildren(alloc, root, &root_dir);
+    try loadChildren(alloc, root, &dir);
     return root;
 }
 
 fn loadChildren(
     alloc: std.mem.Allocator,
     parent: *Node,
-    dir: *std.fs.Dir,           // ← FIXED (no const)
+    dir: *std.fs.Dir,
 ) !void {
     var iter = dir.iterate();
 
-    var scratch: std.ArrayList(*Node) = .{};
-    defer scratch.deinit(alloc);
+    var list: std.ArrayList(*Node) = .{};
+    defer list.deinit(alloc);
 
     while (try iter.next()) |entry| {
-        if (std.mem.eql(u8, entry.name, ".DS_Store"))
-            continue;
+        if (std.mem.eql(u8, entry.name, ".DS_Store")) continue;
 
         const child = try alloc.create(Node);
         child.* = .{
@@ -44,41 +43,68 @@ fn loadChildren(
             .children = &.{},
         };
 
-        try scratch.append(alloc, child);
+        try list.append(alloc, child);
 
         if (child.is_dir) {
-            var subdir = try dir.openDir(entry.name, .{ .iterate = true }); // ← FIXED
-            try loadChildren(alloc, child, &subdir);                        // ← FIXED
+            if (dir.openDir(entry.name, .{ .iterate = true })) |subdir| {
+                try loadChildren(alloc, child, @constCast(&subdir));
+            } else |_| {}
         }
     }
 
-    parent.children = try scratch.toOwnedSlice(alloc);
+    parent.children = try list.toOwnedSlice(alloc);
 }
 
 pub fn flattenTree(
     alloc: std.mem.Allocator,
     node: *Node,
+    last_mask: []bool, // stack representing last-child at each depth
     depth: usize,
     out: *std.ArrayList([]const u8),
 ) !void {
-    var indent_buf: [128]u8 = undefined;
-    const indent_len = @min(depth * 4, indent_buf.len);
+    // Build prefix string safely
+    var prefix: std.ArrayList(u8) = .{};
 
-    for (indent_buf[0..indent_len]) |*b| b.* = ' ';
-    const indent = indent_buf[0..indent_len];
+    // Build prefix segments for all ancestor depths
+    for (last_mask[0..depth], 0..) |is_last, i| {
+        if (i + 1 == depth) {
+            // this level's own prefix handled below
+            break;
+        }
+        if (is_last) {
+            try prefix.appendSlice(alloc, "    ");  // 4 spaces
+        } 
+        else { 
+            try prefix.appendSlice(alloc, "│   ");
+        }
+    }
 
-    const icon = if (node.is_dir) "[D] " else "[F] ";
+    // Add own branch marker
+    if (depth == 0) {
+        // root, no marker
+    } else if (last_mask[depth - 1]) {
+        try prefix.appendSlice(alloc, "└── ");
+    } else {
+        try prefix.appendSlice(alloc, "├── ");
+    }
 
-    var line_buf: [256]u8 = undefined;
-    const line = try std.fmt.bufPrint(
-        &line_buf,
-        "{s}{s}{s}",
-        .{ indent, icon, node.name },
-    );
+    // Build final line: prefix + name
+    var buf: std.ArrayList(u8) = .{};
+    try buf.appendSlice(alloc, prefix.items);
+    try buf.appendSlice(alloc, node.name);
 
-    try out.append(alloc, try alloc.dupe(u8, line));
+    try out.append(alloc, try buf.toOwnedSlice(alloc));
 
-    for (node.children) |child| {
-        try flattenTree(alloc, child, depth + 1, out);
+    // Recurse children
+    const child_count = node.children.len;
+    for (node.children, 0..) |child, i| {
+        // grow last_mask
+        var next_mask = last_mask;
+        if (depth >= next_mask.len) {
+            next_mask = try alloc.realloc(next_mask, depth + 1);
+        }
+        next_mask[depth] = (i == child_count - 1);
+
+        try flattenTree(alloc, child, next_mask, depth + 1, out);
     }
 }

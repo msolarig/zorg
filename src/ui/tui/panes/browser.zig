@@ -20,7 +20,7 @@ pub fn render(win: vaxis.Window) !void {
 
     var rows: std.ArrayList([]const u8) = .{};
 
-    try tree.flattenTree(alloc, root_node, 0, &rows);
+    try tree.flattenTree(alloc, root_node, &.{}, 0, &rows);
 
     var row: usize = 1;
     for (rows.items) |line| {
