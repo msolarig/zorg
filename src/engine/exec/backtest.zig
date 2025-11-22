@@ -17,6 +17,7 @@ pub fn runBacktest(engine: *Engine) !void {
 
     defer om.deinit(engine.alloc);
     defer fm.deinit(engine.alloc);
+    defer pm.deinit(engine.alloc);
 
     const am: AM = AM.init(engine.acc);
 
@@ -27,6 +28,8 @@ pub fn runBacktest(engine: *Engine) !void {
         // Iterate through working orders.
         // Execute if possible
         try fm.evaluateWorkingOrders(engine.alloc, &om, &pm);
+
+        std.debug.print("  Current Exposure: {d}\n", .{pm.exposure});
 
         var inputs = abi.Inputs{
             .iter = index,
@@ -49,13 +52,17 @@ pub fn runBacktest(engine: *Engine) !void {
     // For now the program separates order & fills in separate tables and
     // writes them to usr/out/NAME_SELECTED_IN_ENGINE_MAP/
     
-    // Simple CSV Output with order history
+    // Simple CSV output with order history
     const order_out_file_name: []const u8 = "orders.csv";
     try csv_writer.writeOrderCSV(&engine.out, &om, order_out_file_name);
     std.debug.print("  Saved Order Log to {s}\n", .{order_out_file_name});
 
-    // Simple CSV Output with fill history
+    // Simple CSV output with fill history
     const fill_out_file_name: []const u8 = "fills.csv";
     try csv_writer.writeFillsCSV(&engine.out, &fm, fill_out_file_name);
     std.debug.print("  Saved Fill Log to {s}\n", .{fill_out_file_name});
+
+    // Simple CSV output with position history  
+    const position_out_file_name: []const u8 = "positions.csv";
+    _ = position_out_file_name;
 }

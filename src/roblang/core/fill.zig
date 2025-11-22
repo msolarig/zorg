@@ -54,8 +54,7 @@ pub const FillManager = struct {
     pub fn executeMarketOrder(self: *FillManager, gpa: std.mem.Allocator, order: Order.Order, pm: *PositionManager) !void {
         const fill = Fill.init(order.iter, order.timestamp, order.side, order.price, order.volume);
         try self.fills.append(gpa, fill);
-        pm.exposure += fill.volume;
-        std.debug.print("  Updated Instrument Exposure: {d}\n", .{pm.exposure});
+        try pm.updateInstrumentExposure(gpa, fill);
     }
 
     /// Convert internal list → ABI struct (pointer + count).
