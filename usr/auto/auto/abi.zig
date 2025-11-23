@@ -16,7 +16,7 @@ pub const Inputs = extern struct {
     iter: u64,
     trail: *const TrailABI,
     account: *const AccountABI,
-    fills: *const FillABI,
+    exposure: *f64,
 };
 
 // AUTO OUTPUT ABI ------------------------------------------------------------

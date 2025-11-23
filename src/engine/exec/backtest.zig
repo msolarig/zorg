@@ -29,15 +29,16 @@ pub fn runBacktest(engine: *Engine) !void {
         // Execute if possible
         try fm.evaluateWorkingOrders(engine.alloc, &om, &pm);
 
-        std.debug.print("  Current Exposure: {d}\n", .{pm.exposure});
-
         var inputs = abi.Inputs{
             .iter = index,
             .trail = &engine.trail.toABI(),
             .account = &am.toABI(),
-            .fills = &(try fm.toABI(engine.alloc)),
+            .exposure = &pm.exposure,
         };
 
+        // Create, Send, Receive ,Interpret (CSRI) Protocol 
+        // This step is in charge of calling the auto and translating 
+        // its ABI cmds into internal funciton with ROBlang.
         var command_buffer: [128]Command = undefined;
         var pkt: InstructionPacket = .{
             .count = 0,
@@ -64,5 +65,6 @@ pub fn runBacktest(engine: *Engine) !void {
 
     // Simple CSV output with position history  
     const position_out_file_name: []const u8 = "positions.csv";
-    _ = position_out_file_name;
+    try csv_writer.writePositionCSV(&engine.out, &pm, position_out_file_name);
+    std.debug.print("  Saved Position Log to {s}\n", .{position_out_file_name});
 }

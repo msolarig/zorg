@@ -57,9 +57,9 @@ pub const FillManager = struct {
         try pm.updateInstrumentExposure(gpa, fill);
     }
 
-    /// Convert internal list → ABI struct (pointer + count).
+    /// Convert internal list to ABI struct (pointer + count).
     pub fn toABI(self: *FillManager, alloc: std.mem.Allocator) !FillABI {
-        // rebuild ABI buffer cleanly
+        // clear retaining capacity
         self.abi_buffer.clearRetainingCapacity();
 
         for (self.fills.items) |p| {
@@ -72,7 +72,7 @@ pub const FillManager = struct {
             });
         }
 
-        if (self.abi_buffer.items.len == 0)
+        if (self.abi_buffer.items.len == 0) // if no fills return an empty positions list
             return FillABI{ .ptr = @ptrFromInt(8), .count = 0 };
 
         return FillABI{

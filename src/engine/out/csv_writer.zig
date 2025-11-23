@@ -88,7 +88,7 @@ pub fn writePositionCSV(out: *OutputManager, pm: *PositionManager, filename: []c
     var buf: [4096]u8 = undefined;
     var bw = file.writer(&buf);
 
-    _ = try bw.file.write("Count,Index,Timestamp,Side,Price,Volume\n");
+    _ = try bw.file.write("side\n");
 
     var count: usize = 0;
 
