@@ -16,7 +16,7 @@ pub const Fill = struct {
 
     pub fn init(iter: u64, timestamp: u64, side: FillSide, price: f64, volume: f64) Fill {
         return Fill{
-            .iter =  iter,
+            .iter = iter,
             .timestamp = timestamp,
             .side = side,
             .price = price,

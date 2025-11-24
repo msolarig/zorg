@@ -5,8 +5,8 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     const exe = b.addExecutable(.{
-        .name = "robert",
-        .root_module = b.createModule(.{ .root_source_file = b.path("src/robert.zig"), .target = target, .optimize = optimize, .imports = &.{} }),
+        .name = "zorg",
+        .root_module = b.createModule(.{ .root_source_file = b.path("src/zorg.zig"), .target = target, .optimize = optimize, .imports = &.{} }),
     });
 
     const vaxis = b.dependency("vaxis", .{
@@ -33,13 +33,13 @@ pub fn build(b: *std.Build) void {
         run_cmd.addArgs(args);
     }
 
-    // Unit Tests | Entry Point src/robert.zig --------------
+    // Unit Tests | Entry Point src/zorg.zig --------------
     const test_step = b.step("test", "Run unit tests");
 
     const t = b.addTest(.{
         .name = "unit_tests",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/robert.zig"),
+            .root_source_file = b.path("src/zorg.zig"),
             .target = target,
             .optimize = optimize,
         }),

@@ -1,8 +1,8 @@
 const std = @import("std");
 const OutputManager = @import("output.zig").OutputManager;
-const OrderManager = @import("../../roblang/core/order.zig").OrderManager;
-const FillManager = @import("../../roblang/core/fill.zig").FillManager;
-const PositionManager = @import("../../roblang/core/position.zig").PositionManager;
+const OrderManager = @import("../../zdk/core/order.zig").OrderManager;
+const FillManager = @import("../../zdk/core/fill.zig").FillManager;
+const PositionManager = @import("../../zdk/core/position.zig").PositionManager;
 
 pub fn writeOrderCSV(out: *OutputManager, om: *OrderManager, filename: []const u8) !void {
     const full_path = try out.filePath(std.heap.page_allocator, filename);
@@ -37,19 +37,15 @@ pub fn writeOrderCSV(out: *OutputManager, om: *OrderManager, filename: []const u
     }
 
     try file.sync();
-
 }
 
 pub fn writeFillsCSV(out: *OutputManager, fm: *FillManager, filename: []const u8) !void {
-    // full absolute path
     const full_path = try out.filePath(std.heap.page_allocator, filename);
     defer std.heap.page_allocator.free(full_path);
 
-    // create/truncate
     var file = try std.fs.cwd().createFile(full_path, .{ .truncate = true });
     defer file.close();
 
-    // buffering
     var buf: [4096]u8 = undefined;
     var bw = file.writer(&buf);
 
@@ -111,5 +107,4 @@ pub fn writePositionCSV(out: *OutputManager, pm: *PositionManager, filename: []c
     }
 
     try file.sync();
-
 }

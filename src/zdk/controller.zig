@@ -3,7 +3,7 @@ const Command = @import("abi/command.zig").Command;
 const Packet = @import("abi/command.zig").InstructionPacket;
 const Order = @import("core/order.zig").Order;
 const OrderManager = @import("core/order.zig").OrderManager;
- 
+
 /// Hello
 pub fn ExecuteInstructionPacket(alloc: std.mem.Allocator, ip: Packet, om: *OrderManager) !void {
     for (0..ip.count) |instruction_index| {

@@ -2,27 +2,21 @@ const std = @import("std");
 const db = @import("../data/sql_wrap.zig");
 const json_util = @import("../../utils/json_utility.zig").cleanJSON;
 const path_util = @import("../../utils/path_utility.zig");
-const Account = @import("../../roblang/core/account.zig").Account;
+const Account = @import("../../zdk/core/account.zig").Account;
 const OutputConfig = @import("../out/output.zig").OutputConfig;
 
-/// Data Feed Mode
 const FeedMode = enum { Live, SQLite3 };
-
-/// Process Execution Mode
 const ExecMode = enum { LiveExecution, Backtest, Optimization };
 
-/// Engine Map (Configuration File)
-///   provides required information for system to locate and load inputs
-///   as well as instructions for process & execution.
 pub const Map = struct {
     alloc: std.mem.Allocator,
-    auto: []const u8, 
+    auto: []const u8,
     feed_mode: FeedMode,
-    db: []const u8, 
-    table: []const u8, 
-    t0: u64, 
+    db: []const u8,
+    table: []const u8,
+    t0: u64,
     tn: u64,
-    trail_size: u64, 
+    trail_size: u64,
     exec_mode: ExecMode,
     account: Account,
     output: OutputConfig,
@@ -71,7 +65,7 @@ pub const Map = struct {
         map.auto = try path_util.autoSrcRelPathToCompiledAbsPath(alloc, parsed.value.ENGINE_AUTO_TO_ATTACH);
         map.db = try path_util.dbRelPathToAbsPath(alloc, parsed.value.ENGINE_DB_FILE_NAME);
         map.table = try alloc.dupe(u8, parsed.value.ENGINE_DB_TABLE_NAME);
-        map.account = Account{ .ACCOUNT_BALANCE = parsed.value.ENGINE_ACCOUNT_CONFIG.ACCOUNT_BALANCE};
+        map.account = Account{ .ACCOUNT_BALANCE = parsed.value.ENGINE_ACCOUNT_CONFIG.ACCOUNT_BALANCE };
         map.output = OutputConfig{ .OUTPUT_DIR_NAME = try alloc.dupe(u8, parsed.value.ENGINE_OUTPUT_CONFIG.OUTPUT_DIR_NAME) };
 
         return map;

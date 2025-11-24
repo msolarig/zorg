@@ -3,7 +3,7 @@ const vaxis = @import("vaxis");
 
 inline fn print(win: vaxis.Window, row: u16, col: u16, text: []const u8) void {
     const seg = vaxis.Cell.Segment{ .text = text, .style = .{} };
-    _ = win.print(&[_]vaxis.Cell.Segment{ seg }, .{
+    _ = win.print(&[_]vaxis.Cell.Segment{seg}, .{
         .row_offset = row,
         .col_offset = col,
     });
@@ -37,7 +37,7 @@ pub fn draw(win: vaxis.Window, label: []const u8) void {
     // ───────────────────────────────────────
     // SIDE BORDERS
     // ───────────────────────────────────────
-    for (1..h-1) |row_usize| {
+    for (1..h - 1) |row_usize| {
         const row = @as(u16, @intCast(row_usize));
         print(win, row, 0, "│");
         print(win, row, @intCast(w - 1), "│");

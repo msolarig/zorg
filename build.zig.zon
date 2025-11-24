@@ -1,7 +1,7 @@
 .{
-    .name = .robert,
+    .name = .zorg,
     .version = "0.0.0",
-    .fingerprint = 0x791875e7c14ba2c9,
+    .fingerprint = 0xa892fc76afec33ec,
     .minimum_zig_version = "0.15.1",
     .dependencies = .{
         .vaxis = .{

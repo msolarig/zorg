@@ -1,19 +1,19 @@
-# *ROBERT!*
+# *Zorg*
 
 ![Static Badge](https://img.shields.io/badge/Zig-0.15.2-orange)
 ![Static Badge](https://img.shields.io/badge/Python-3.13-blue) 
 ![Static Badge](https://img.shields.io/badge/Support_For_macOS-26-purple)
 
-(v1.0.0 in active development)
+(Zorg & ZDK v1.0.0 in active development)
 
-A blazing fast, modular environment for designing, testing, and executing algorithmic trading models (in Zig!). ROBERT brings a different approach to the space of financial development environments, one in which the user has full control of every process, all from one file!
+A blazing fast, modular environment for designing, testing, and executing algorithmic trading models (in Zig!). Zorg brings a different approach to the space of financial development environments, one in which the user has full control of every process, all from one file!
 
 Features:
   - Design custom Engines with the specialized Engine-Map system.
-  - Build algorithms with ROBlang, leveraging Zig's speed and control
+  - Build algorithms with the Zorg Development Kit (ZDK), leveraging Zig's speed and control
   - Save input databases or connect a to a live API (soon)
 
-With ROBERT, all you need to do is pass one file, a single Engine-Map.json containing the adress to your auto (algorithm) and database, alongside all the settings you require in order to assemble your custom ready-to-work Engine.
+With Zorg, all you need to do is pass one file, a single Engine-Map.json containing the adress to your auto (algorithm) and database, alongside all the settings you require in order to assemble your custom ready-to-work Engine.
 
 ![Alt text](/assets/readme/gifs/interface.gif?raw=true "Interface Gif")
 
@@ -35,7 +35,7 @@ Sample Engine-Map.json:
   "exec_mode": "Backtest"       // Backest? Optimize? Route?
 }
 ```
-ROBERT will read this file and assemble a full-on engine, with direct connection to the specified inputs and configurations. Do not worry about paths! He knows where your files are, just make sure to drop them on the usr/ directory, in their respective groups.
+Zorg will read this file and assemble a full-on engine, with direct connection to the specified inputs and configurations. Do not worry about paths! He knows where your files are, just make sure to drop them on the usr/ directory, in their respective groups.
 
 ## Self Contained Algorithms
 
@@ -68,20 +68,20 @@ Ready! the usr/auto/AUTO will be compiled automatically. The best part is, you o
 
 ## Simple Interface
 
-For now, ROBERT has a straightforward, script like ui. Simply answer the prompt with a map.json and the engine will be assembled automatically and provide some details. 
+For now, Zorg has a straightforward, script like ui. Simply answer the prompt with a map.json and the engine will be assembled automatically and provide some details. 
 
 Here is an example with a basic auto that prints to the screen when it finds a specific pattern in the data:
 
 ```zsh
 ┌─────────────────────────────────────────────────────────────┐
-│ ROBERT  / Robotic Execution & Research Terminal /
+│ Zorg 
 └─────────────────────────────────────────────────────────────┘
   ENGINE MAP › map.json  <- ONLY USER INPUT
 
   ENGINE ASSEMBLED | 219ms |
     exec: .Backtest
-    auto: /robert/zig-out/bin/auto/test_auto.dylib
-    feed: /robert/usr/data/market.db
+    auto: /zorg/zig-out/bin/auto/test_auto.dylib
+    feed: /zorg/usr/data/market.db
 
   EXECUTING PROCESS…
   LONG INITIATED @ iter 090 | close=247.71

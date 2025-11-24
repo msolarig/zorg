@@ -1,7 +1,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
-const abi = @import("../../roblang/abi/abi.zig");
-const InstructionPacket = @import("../../roblang/abi/command.zig").InstructionPacket;
+const abi = @import("../../zdk/abi/abi.zig");
+const InstructionPacket = @import("../../zdk/abi/command.zig").InstructionPacket;
 
 pub const LoadedAuto = struct {
     allocator: std.mem.Allocator,

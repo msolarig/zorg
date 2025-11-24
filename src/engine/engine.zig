@@ -5,14 +5,11 @@ const Trail = @import("data/local_data.zig").Trail;
 const Map = @import("config/map.zig").Map;
 const loader = @import("auto/loader.zig");
 const Auto = loader.LoadedAuto;
-const Account = @import("../roblang/core/account.zig").Account;
+const Account = @import("../zdk/core/account.zig").Account;
 const OutputManager = @import("out/output.zig").OutputManager;
 const path_util = @import("../utils/path_utility.zig");
 const backtest = @import("exec/backtest.zig");
 
-/// Central Unit of Execution:
-///  takes a single config file (Map) and automatically
-///  loads inputs, executes commands, produces specified output.
 pub const Engine = struct {
     alloc: std.mem.Allocator,
     map: Map,
@@ -22,9 +19,6 @@ pub const Engine = struct {
     trail: Trail,
     out: OutputManager,
 
-    /// Initialize an Engine instance
-    ///   Reads & saves process configs.
-    ///   Loads Track, Trail, compiled Auto.
     pub fn init(alloc: std.mem.Allocator, map_path: []const u8) !Engine {
         const map_abs_path = try path_util.mapRelPathToAbsPath(alloc, map_path);
         defer alloc.free(map_abs_path);
@@ -61,12 +55,8 @@ pub const Engine = struct {
         };
     }
 
-    /// Engine Process Manager
-    ///   Branches execution to different processes based on Map's execution mode value.
     pub fn ExecuteProcess(self: *Engine) !void {
-
-        // placeholder var
-        var foo: u8 = undefined;
+        var foo: u8 = undefined; // placeholder
 
         switch (self.map.exec_mode) {
             .LiveExecution => foo = 0,
@@ -75,8 +65,6 @@ pub const Engine = struct {
         }
     }
 
-    /// Deinitialize Engine instance
-    ///  Frees Map, Auto, Track, Trail.
     pub fn deinit(self: *Engine) void {
         self.map.deinit();
         self.auto.deinit();

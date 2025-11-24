@@ -72,9 +72,8 @@ pub fn flattenTree(
             break;
         }
         if (is_last) {
-            try prefix.appendSlice(alloc, "    ");  // 4 spaces
-        } 
-        else { 
+            try prefix.appendSlice(alloc, "    "); // 4 spaces
+        } else {
             try prefix.appendSlice(alloc, "│   ");
         }
     }

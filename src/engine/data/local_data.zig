@@ -1,11 +1,7 @@
 const std = @import("std");
 const db = @import("sql_wrap.zig");
-const abi = @import("../../roblang/abi/trail.zig");
+const abi = @import("../../zdk/abi/trail.zig");
 
-/// Process Historical Database
-///   Engine reads a DB, t0, and tn from its map. Loads a Track with
-///   a separate arraylist for each data component from t0 through tn.
-///   Allows for access to desired historical feed in a local data structure.
 pub const Track = struct {
     size: u64,
     ts: std.ArrayListUnmanaged(u64),
@@ -15,8 +11,6 @@ pub const Track = struct {
     cl: std.ArrayListUnmanaged(f64),
     vo: std.ArrayListUnmanaged(u64),
 
-    /// Initialize an empty Track instance
-    ///   Generate size and six empty arraylist fields for timestamp, OHLCV values.
     pub fn init() Track {
         return Track{
             .size = 0,
@@ -29,11 +23,6 @@ pub const Track = struct {
         };
     }
 
-    /// Load an empty Track with db_handle data form t0 to tn
-    ///   Generates a SQLite3 query, iterates through specified row range, appends each
-    ///   data point to their respecitve arraylist while keeping a common index per data point.
-    ///   The generated query specifies to traverse the db in reverse, assigning the most recent
-    ///   value to the lowest index: Track.ts.items[0] = most recent timestamp.
     pub fn load(self: *Track, alloc: std.mem.Allocator, db_handle: *anyopaque, table: []const u8, t0: u64, tn: u64) !void {
         const query: []const u8 = "SELECT timestamp, open, high, low, close, volume FROM {s} ORDER BY timestamp DESC";
         const command: []const u8 = try std.fmt.allocPrint(alloc, query, .{table});
@@ -73,8 +62,6 @@ pub const Track = struct {
         _ = db.sqlite3_finalize(stmt.?);
     }
 
-    /// Deinitalize Track Instance
-    ///   Frees ts, op, hi, lo, cl, vo arraylists.
     pub fn deinit(self: *Track, alloc: std.mem.Allocator) void {
         self.ts.deinit(alloc);
         self.op.deinit(alloc);
@@ -85,9 +72,6 @@ pub const Track = struct {
     }
 };
 
-/// Track Dynamic Window
-///   The Trail serves as a shifting view into the loaded Track. Its purpose is to facilitate
-///   "relative-to-its-position" data access to the auto when executing (iterating through Track).
 pub const Trail = struct {
     size: usize,
     ts: []u64,
@@ -97,8 +81,6 @@ pub const Trail = struct {
     cl: []f64,
     vo: []u64,
 
-    /// Initialize Trail instance
-    ///   Generates empty Trail with size and six empty [size]arrays field for timestamp, OHLCV values.
     pub fn init(alloc: std.mem.Allocator, size: usize) !Trail {
         return Trail{
             .size = size,
@@ -111,9 +93,6 @@ pub const Trail = struct {
         };
     }
 
-    /// Load an empty Trail with the most recent 'size' data points
-    ///   Distributed into their respective arrays, these values are designed to shift as the auto
-    ///   iterates throught the Track. Values are accessible as 'trail'.ts[0] = most recent timestamp.
     pub fn load(self: *Trail, track: Track, steps: u64) !void {
         var trail_index: u64 = 0;
         var track_index: u64 = track.ts.items.len - (steps + 1);
@@ -131,7 +110,6 @@ pub const Trail = struct {
         }
     }
 
-    /// Cast a Trail instance into a C ABI readable struct
     pub fn toABI(self: *Trail) abi.TrailABI {
         return abi.TrailABI{
             .ts = self.ts.ptr,
@@ -143,8 +121,6 @@ pub const Trail = struct {
         };
     }
 
-    /// Deinitialize Trail instance
-    ///   Frees ts, op, hi, lo, cl, vo arrays.
     pub fn deinit(self: *Trail, alloc: std.mem.Allocator) void {
         alloc.free(self.ts);
         alloc.free(self.op);

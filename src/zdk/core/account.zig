@@ -4,7 +4,7 @@ pub const Account = struct {
     ACCOUNT_BALANCE: f64,
 
     pub fn init(balance: f64) Account {
-        return .{ .ACCOUNT_BALANCE= balance };
+        return .{ .ACCOUNT_BALANCE = balance };
     }
 };
 

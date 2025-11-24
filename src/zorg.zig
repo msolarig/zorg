@@ -3,15 +3,13 @@ const cli = @import("ui/script.zig");
 const tui = @import("ui/tui/app.zig");
 
 pub fn main() !void {
-
-    // Allocator
     var GPA = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = GPA.deinit();
     const gpa = GPA.allocator();
 
     switch (isTuiMode()) {
-        true => try tui.run(gpa), // TUI APPLICATION MODE 
-        false => try cli.run(gpa) // CLI SCRIPT MODE
+        true => try tui.run(gpa),
+        false => try cli.run(gpa),
     }
 }
 

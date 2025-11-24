@@ -1,6 +1,5 @@
 const std = @import("std");
 
-/// Returns the project root (three directories above the executable)
 pub fn getProjectRootPath(alloc: std.mem.Allocator) ![]const u8 {
     const builtin = @import("builtin");
 
@@ -18,8 +17,6 @@ pub fn getProjectRootPath(alloc: std.mem.Allocator) ![]const u8 {
     return try alloc.dupe(u8, root_dir);
 }
 
-/// Tries multiple directories and returns the absolute path of the first match.
-/// 'dirs' being a list of directory strings relative to the project root.
 fn findExistingFile(alloc: std.mem.Allocator, root_abs: []const u8, file_name: []const u8, dirs: []const []const u8) ![]const u8 {
     var cwd = std.fs.cwd();
 
@@ -39,8 +36,6 @@ fn findExistingFile(alloc: std.mem.Allocator, root_abs: []const u8, file_name: [
     return error.FileNotFound;
 }
 
-/// Finds an auto-compiled dylib path like:
-/// usr/auto/AUTO.zig  → zig-out/bin/auto/AUTO.dylib
 fn resolveAutoDylibPath(alloc: std.mem.Allocator, root_abs: []const u8, zig_file: []const u8) ![]u8 {
     const file_name = std.fs.path.basename(zig_file);
 
@@ -52,8 +47,6 @@ fn resolveAutoDylibPath(alloc: std.mem.Allocator, root_abs: []const u8, zig_file
     });
 }
 
-/// Converts "usr/map/MAP.json" into its absolute path
-/// Includes fallback search for testing Maps
 pub fn mapRelPathToAbsPath(alloc: std.mem.Allocator, map_path: []const u8) ![]const u8 {
     const file_name = std.fs.path.basename(map_path);
 
@@ -74,7 +67,6 @@ pub fn mapRelPathToAbsPath(alloc: std.mem.Allocator, map_path: []const u8) ![]co
     );
 }
 
-/// Converts "usr/auto/AUTO.zig" into its absolute dylib path
 pub fn autoSrcRelPathToCompiledAbsPath(alloc: std.mem.Allocator, auto_path: []const u8) ![]const u8 {
     const root_abs = try getProjectRootPath(alloc);
     defer alloc.free(root_abs);
@@ -82,8 +74,6 @@ pub fn autoSrcRelPathToCompiledAbsPath(alloc: std.mem.Allocator, auto_path: []co
     return try resolveAutoDylibPath(alloc, root_abs, auto_path);
 }
 
-/// Converts "usr/data/DB.db" into its absolute path
-/// Includes fallback search for testing DBs
 pub fn dbRelPathToAbsPath(alloc: std.mem.Allocator, db_path: []const u8) ![]const u8 {
     const file_name = std.fs.path.basename(db_path);
 

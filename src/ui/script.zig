@@ -21,11 +21,10 @@ pub fn run(alloc: std.mem.Allocator) !void {
     var stdin_reader = std.fs.File.stdin().reader(&stdin_buffer);
     const stdin = &stdin_reader.interface;
 
-    // Clear screen + header
-    try stdout.print("\x1b[2J\x1b[H", .{});    
+    try stdout.print("\x1b[2J\x1b[H", .{});
     try stdout.print(
         \\{s}┌─────────────────────────────────────────────────────────────┐{s}
-        \\{s}│ {s}{s}ROBERT{s}  {s}/ Robotic Execution & Research Terminal /{s}  {s}
+        \\{s}│ {s}{s}Zorg{s}  {s}/ v1.0.0 in Active Development /{s}  {s}
         \\{s}└─────────────────────────────────────────────────────────────┘{s}
     , .{
         Style.subtle, Style.reset,
@@ -35,8 +34,7 @@ pub fn run(alloc: std.mem.Allocator) !void {
         Style.subtle, Style.subtle,
         Style.reset,
     });
-    
-    // Request map.json path
+
     try stdout.print(
         "\n{s}{s}  ENGINE MAP{s} {s}› {s}",
         .{ Style.bold, Style.accent, Style.reset, Style.dim, Style.reset },
@@ -45,29 +43,25 @@ pub fn run(alloc: std.mem.Allocator) !void {
 
     const engine_map = try stdin.takeDelimiterExclusive('\n');
 
-    // Total runtime timer
     const start = std.time.milliTimestamp();
 
-    // Engine initialization timer
     const start_init = std.time.milliTimestamp();
     var engine = try Engine.init(alloc, engine_map);
     const elapsed_init = std.time.milliTimestamp() - start_init;
 
     defer engine.deinit();
 
-    // Engine summary
     try stdout.print("\n{s}{s}  ENGINE ASSEMBLED{s}\n", .{ Style.bold, Style.accent, Style.reset });
     try stdout.print("{s}    exec:{s} {any}\n", .{ Style.info, Style.reset, engine.map.exec_mode });
 
-    const auto_rel = engine.map.auto[std.mem.indexOf(u8, engine.map.auto, "robert/").?..];
+    const auto_rel = engine.map.auto[std.mem.indexOf(u8, engine.map.auto, "zorg/").?..];
     try stdout.print("{s}    auto:{s} /{s}\n", .{ Style.info, Style.reset, auto_rel });
 
-    const db_rel = engine.map.db[std.mem.indexOf(u8, engine.map.db, "robert/").?..];
+    const db_rel = engine.map.db[std.mem.indexOf(u8, engine.map.db, "zorg/").?..];
     try stdout.print("{s}    feed:{s} /{s}\n\n", .{ Style.info, Style.reset, db_rel });
 
     try stdout.flush();
 
-    // Execute
     try stdout.print("{s}{s}  EXECUTING PROCESS…{s}\n", .{ Style.bold, Style.accent, Style.reset });
     try stdout.flush();
 
@@ -77,7 +71,6 @@ pub fn run(alloc: std.mem.Allocator) !void {
 
     const elapsed_total = std.time.milliTimestamp() - start;
 
-    // Footer timing summary
     try stdout.print(
         "{s}{s}  DONE | EA:{d}ms | PE:{d}ms | TR:{d}ms | {s}\n\n",
         .{
