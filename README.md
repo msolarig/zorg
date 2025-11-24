@@ -1,12 +1,11 @@
 <div align="center">
 
 # *Zorg*
-
-</div>
-
 ![Static Badge](https://img.shields.io/badge/Zig-0.15.2-orange)
 ![Static Badge](https://img.shields.io/badge/Python-3.13-blue) 
 ![Static Badge](https://img.shields.io/badge/Support_For_macOS-26-purple)
+
+</div>
 
 (Zorg & ZDK v1.0.0 in active development)
 
