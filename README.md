@@ -1,4 +1,8 @@
+<div align="center">
+
 # *Zorg*
+
+</div>
 
 ![Static Badge](https://img.shields.io/badge/Zig-0.15.2-orange)
 ![Static Badge](https://img.shields.io/badge/Python-3.13-blue) 
