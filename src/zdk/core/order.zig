@@ -1,7 +1,8 @@
 const std = @import("std");
+const abi = @import("../abi.zig");
 
-pub const OrderDirection = enum(c_int) { Buy = 1, Sell = -1 };
-pub const OrderType = enum(c_int) { Market = 0, Limit = 1, Stop = 2 };
+pub const OrderDirection = abi.OrderDirection;
+pub const OrderType = abi.OrderType;
 
 pub const Order = struct {
     iter: u64,

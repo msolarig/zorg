@@ -1,6 +1,6 @@
 const std = @import("std");
 const db = @import("sql_wrap.zig");
-const abi = @import("../../zdk/abi/trail.zig");
+const abi = @import("../../zdk/abi.zig");
 
 pub const Track = struct {
     size: u64,

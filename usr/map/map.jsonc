@@ -55,7 +55,7 @@
 
     // Account Configuration
     "ENGINE_ACCOUNT_CONFIG": {
-        "ACCOUNT_BALANCE"                       : 1000.0
+        "balance"                               : 1000.0
     },
     
     // Output Configutaion

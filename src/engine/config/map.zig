@@ -1,8 +1,6 @@
 const std = @import("std");
-const db = @import("../data/sql_wrap.zig");
-const json_util = @import("../../utils/json_utility.zig").cleanJSON;
 const path_util = @import("../../utils/path_utility.zig");
-const Account = @import("../../zdk/core/account.zig").Account;
+const Account = @import("../../zdk/core.zig").Account;
 const OutputConfig = @import("../out/output.zig").OutputConfig;
 
 const FeedMode = enum { Live, SQLite3 };
@@ -28,10 +26,10 @@ pub const Map = struct {
         const file_bytes = try file.readToEndAlloc(alloc, std.math.maxInt(usize));
         defer alloc.free(file_bytes);
 
-        const json_bytes = try json_util.stripComments(alloc, file_bytes);
+        const json_bytes = try stripJsonComments(alloc, file_bytes);
         defer alloc.free(json_bytes);
 
-        const MapPlaceholder = struct {
+        const MapSchema = struct {
             ENGINE_EXECUTION_MODE: ExecMode,
             ENGINE_AUTO_TO_ATTACH: []const u8,
             ENGINE_DATA_FEED_MODE: FeedMode,
@@ -44,7 +42,7 @@ pub const Map = struct {
             ENGINE_OUTPUT_CONFIG: OutputConfig,
         };
 
-        var parsed = try std.json.parseFromSlice(MapPlaceholder, alloc, json_bytes, .{});
+        var parsed = try std.json.parseFromSlice(MapSchema, alloc, json_bytes, .{});
         defer parsed.deinit();
 
         var map = Map{
@@ -65,7 +63,7 @@ pub const Map = struct {
         map.auto = try path_util.autoSrcRelPathToCompiledAbsPath(alloc, parsed.value.ENGINE_AUTO_TO_ATTACH);
         map.db = try path_util.dbRelPathToAbsPath(alloc, parsed.value.ENGINE_DB_FILE_NAME);
         map.table = try alloc.dupe(u8, parsed.value.ENGINE_DB_TABLE_NAME);
-        map.account = Account{ .ACCOUNT_BALANCE = parsed.value.ENGINE_ACCOUNT_CONFIG.ACCOUNT_BALANCE };
+        map.account = Account{ .balance = parsed.value.ENGINE_ACCOUNT_CONFIG.balance };
         map.output = OutputConfig{ .OUTPUT_DIR_NAME = try alloc.dupe(u8, parsed.value.ENGINE_OUTPUT_CONFIG.OUTPUT_DIR_NAME) };
 
         return map;
@@ -78,3 +76,58 @@ pub const Map = struct {
         self.alloc.free(self.output.OUTPUT_DIR_NAME);
     }
 };
+
+fn stripJsonComments(alloc: std.mem.Allocator, input: []const u8) ![]u8 {
+    var out: std.ArrayList(u8) = .{};
+    errdefer out.deinit(alloc);
+
+    var i: usize = 0;
+    var in_string = false;
+    var escaped = false;
+
+    while (i < input.len) {
+        const c = input[i];
+
+        if (in_string) {
+            try out.append(alloc, c);
+            if (escaped) {
+                escaped = false;
+            } else if (c == '\\') {
+                escaped = true;
+            } else if (c == '"') {
+                in_string = false;
+            }
+            i += 1;
+            continue;
+        }
+
+        if (c == '"') {
+            in_string = true;
+            try out.append(alloc, c);
+            i += 1;
+            continue;
+        }
+
+        if (c == '/' and i + 1 < input.len and input[i + 1] == '/') {
+            i += 2;
+            while (i < input.len and input[i] != '\n') : (i += 1) {}
+            continue;
+        }
+
+        if (c == '/' and i + 1 < input.len and input[i + 1] == '*') {
+            i += 2;
+            while (i + 1 < input.len) : (i += 1) {
+                if (input[i] == '*' and input[i + 1] == '/') {
+                    i += 2;
+                    break;
+                }
+            }
+            continue;
+        }
+
+        try out.append(alloc, c);
+        i += 1;
+    }
+
+    return out.toOwnedSlice(alloc);
+}

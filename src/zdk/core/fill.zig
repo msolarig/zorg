@@ -1,6 +1,5 @@
 const std = @import("std");
-const FillABI = @import("../abi/fill.zig").FillABI;
-const FillEntryABI = @import("../abi/fill.zig").FillEntryABI;
+const abi = @import("../abi.zig");
 const Order = @import("order.zig");
 const OrderManager = @import("order.zig").OrderManager;
 const PositionManager = @import("position.zig").PositionManager;
@@ -27,8 +26,8 @@ pub const Fill = struct {
 
 pub const FillManager = struct {
     fills: std.ArrayList(Fill),
-    abi_buffer: std.ArrayList(FillEntryABI),
-    abi: FillABI,
+    abi_buffer: std.ArrayList(abi.FillEntryABI),
+    abi: abi.FillABI,
 
     pub fn init() FillManager {
         return FillManager{
@@ -57,9 +56,7 @@ pub const FillManager = struct {
         try pm.updateInstrumentExposure(gpa, fill);
     }
 
-    /// Convert internal list to ABI struct (pointer + count).
-    pub fn toABI(self: *FillManager, alloc: std.mem.Allocator) !FillABI {
-        // clear retaining capacity
+    pub fn toABI(self: *FillManager, alloc: std.mem.Allocator) !abi.FillABI {
         self.abi_buffer.clearRetainingCapacity();
 
         for (self.fills.items) |p| {
@@ -72,10 +69,10 @@ pub const FillManager = struct {
             });
         }
 
-        if (self.abi_buffer.items.len == 0) // if no fills return an empty positions list
-            return FillABI{ .ptr = @ptrFromInt(8), .count = 0 };
+        if (self.abi_buffer.items.len == 0)
+            return abi.FillABI{ .ptr = @ptrFromInt(8), .count = 0 };
 
-        return FillABI{
+        return abi.FillABI{
             .ptr = self.abi_buffer.items.ptr,
             .count = @intCast(self.abi_buffer.items.len),
         };

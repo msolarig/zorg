@@ -1,31 +1,50 @@
 const std = @import("std");
-const Command = @import("abi/command.zig").Command;
-const Packet = @import("abi/command.zig").InstructionPacket;
+const abi = @import("abi.zig");
 const Order = @import("core/order.zig").Order;
 const OrderManager = @import("core/order.zig").OrderManager;
 
-/// Hello
-pub fn ExecuteInstructionPacket(alloc: std.mem.Allocator, ip: Packet, om: *OrderManager) !void {
-    for (0..ip.count) |instruction_index| {
-        const command: Command = ip.commands[instruction_index];
+pub fn executeInstructionPacket(gpa: std.mem.Allocator, packet: abi.Output.Packet, om: *OrderManager) !void {
+    for (0..packet.count) |instruction_index| {
+        const command: abi.Command = packet.commands[instruction_index];
 
         switch (command.command_type) {
             .PlaceOrder => {
-                const req = command.payload.place;
-                const order = Order.init(
-                    req.iter,
-                    req.timestamp,
-                    req.order_type,
-                    req.direction,
-                    req.price,
-                    req.volume,
-                );
-                try om.placeOrder(alloc, order);
+                switch (command.payload.order_request.order_type) {
+                    .Market => {
+                        const req = command.payload.order_request;
+                        const order = Order.init(
+                            req.iter,
+                            req.timestamp,
+                            req.order_type,
+                            req.direction,
+                            0,
+                            req.volume,
+                        );
+                        try om.placeOrder(gpa, order);
+                    },
+
+                    .Stop => {
+                        const req = command.payload.order_request;
+                        const order = Order.init(
+                            req.iter,
+                            req.timestamp,
+                            req.order_type,
+                            req.direction,
+                            req.price,
+                            req.volume,
+                        );
+                        try om.placeOrder(gpa, order);
+                    },
+
+                    .Limit => {
+                        return;
+                    },
+                }
             },
 
             .CancelOrder => {
-                const id = command.payload.cancel.order_id;
-                try om.cancelOrder(alloc, id);
+                const id = command.payload.cancel_request.order_id;
+                try om.cancelOrder(gpa, id);
             },
         }
     }

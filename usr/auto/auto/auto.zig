@@ -1,81 +1,47 @@
-const std = @import("std");
-const abi = @import("abi.zig");
+const zdk = @import("zdk.zig");
 
-// ----------------------------------------------------------------------------------------------------------
+// AUTO DETAILS ----------------------------------------------------------------------------------*
 
-const NAME: [*:0]const u8 = "RobSA-TEP";
-const DESC: [*:0]const u8 = "ROBERT SAMPLE AUTO _n1_: A Simple TA Engulfing Algorithm ";
+const NAME: [*:0]const u8 = "Bullish Engulfing";
+const DESC: [*:0]const u8 = "Detects bullish engulfing patterns and places orders";
 
-// ----------------------------------------------------------------------------------------------------------
+// PRIVATE VARIABLES -----------------------------------------------------------------------------*
 
-// ----------------------------------------------------------------------------------------------------------
-//
-//
-//          --|--   The famous (but probably not so useful) Bullish Engulfing
-//    --|-- |   |
-//    | O | | O |   This sample will show you the basic functionality & interaction with ROBlang:
-//    | < | | > |       - How to access historic prices with the trail
-//    | C | | C |       - How to create & append commands to the packet
-//    --|-- |   |
-//          --|--
-//
-// ----------------------------------------------------------------------------------------------------------
+const MIN_REQUIRED_POINTS: u8 = 2;
 
-// CUSTOM GLOBAL VARIABLES ^ Functions ----------------------------------------------------------------------
+// AUTO LOGIC FUNCTION ---------------------------------------------------------------------------*
 
-const min_required_points: u8 = 2; // Avoid index-out-of-range errors!
-
-inline fn submitBuyMkt(in: abi.Inputs, pkt: *abi.InstructionPacket, price: f64) void {
-    const cmd: abi.Command = .{
-        .type = .PlaceOrder,
-        .payload = .{
-            .place = .{
-                .iter = in.iter,
-                .timestamp = in.trail.ts[0],
-                .direction = .Buy,
-                .order_type = .Market,
-                .price = price,
-                .volume = 1,
-            },
-        },
-    };
-    pkt.add(cmd);
-}
-
-// ----------------------------------------------------------------------------------------------------------
-
-// AUTO LOGIC FUNCTION (ALF) --------------------------------------------------------------------------------
-
-fn ALF(inputs: abi.Inputs, packet: *abi.InstructionPacket) callconv(.c) void {
-    const op0: f64 = inputs.trail.op[0];
-    const cl0: f64 = inputs.trail.cl[0];
-    const op1: f64 = inputs.trail.op[1];
-    const cl1: f64 = inputs.trail.cl[1];
+fn logic(input: *const zdk.Input.Packet, output: *zdk.Output.Packet) callconv(.c) void {
+    const op0 = input.trail.op[0];
+    const cl0 = input.trail.cl[0];
+    const op1 = input.trail.op[1];
+    const cl1 = input.trail.cl[1];
 
     const prev_red = cl1 < op1;
-    const cur_green = cl0 > op0;
-    const cur_engulf = op0 < op1 and cl0 > cl1;
+    const curr_green = cl0 > op0;
+    const curr_engulfs = op0 < op1 and cl0 > cl1;
 
-    if (inputs.iter > min_required_points)
-        if (prev_red and cur_green and cur_engulf)
-            submitBuyMkt(inputs, packet, op0);
+    if (input.iter > MIN_REQUIRED_POINTS) {
+        if (prev_red and curr_green and curr_engulfs) {
+            zdk.Order.buyMarket(input, output, 10);
+        }
+    }
 }
 
-// ----------------------------------------------------------------------------------------------------------
+// Auto Deinitialization Function ----------------------------------------------------------------*
 
-// AUTO DEINITIALIZATION FUNCTION (ADF) ---------------------------------------------------------------------
+fn deinit() callconv(.c) void {}
 
-fn ADF() callconv(.c) void {
-    //Include any DA'd memory
+// ABI Handle - DO NOT MODIFY --------------------------------------------------------------------*
+
+var abi = zdk.ABI{
+    .version = zdk.VERSION,
+    .name = NAME,
+    .desc = DESC,
+    .logic = logic,
+    .deinit = deinit,
+};
+
+export fn getABI() callconv(.c) *const zdk.ABI {
+    return &abi;
 }
-
-// ----------------------------------------------------------------------------------------------------------
-
-// AUTO HANDLE EXPORT - DO NOT MODIFY -----------------------------------------------------------------------
-
-var GLOBAL_ABI: abi.AutoABI = .{ .name = NAME, .desc = DESC, .logic = ALF, .deinit = ADF };
-pub export fn getAutoABI() callconv(.c) *const abi.AutoABI {
-    return &GLOBAL_ABI;
-}
-
-// ----------------------------------------------------------------------------------------------------------

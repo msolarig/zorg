@@ -1,27 +1,21 @@
-const std = @import("std");
+const abi = @import("../abi.zig");
 
 pub const Account = struct {
-    ACCOUNT_BALANCE: f64,
+    balance: f64,
 
     pub fn init(balance: f64) Account {
-        return .{ .ACCOUNT_BALANCE = balance };
+        return .{ .balance = balance };
     }
 };
 
-/// AccountManager handles the state and loading logic.
-/// More fields will be added in later versions.
 pub const AccountManager = struct {
     account: Account,
 
     pub fn init(acc: Account) AccountManager {
-        return .{
-            .account = acc,
-        };
+        return .{ .account = acc };
     }
 
-    pub fn toABI(self: *const AccountManager) @import("../abi/account.zig").AccountABI {
-        return .{
-            .ACCOUNT_BALANCE = self.account.ACCOUNT_BALANCE,
-        };
+    pub fn toABI(self: *const AccountManager) abi.AccountABI {
+        return .{ .balance = self.account.balance };
     }
 };

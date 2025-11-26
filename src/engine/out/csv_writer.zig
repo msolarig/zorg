@@ -1,8 +1,9 @@
 const std = @import("std");
 const OutputManager = @import("output.zig").OutputManager;
-const OrderManager = @import("../../zdk/core/order.zig").OrderManager;
-const FillManager = @import("../../zdk/core/fill.zig").FillManager;
-const PositionManager = @import("../../zdk/core/position.zig").PositionManager;
+const core = @import("../../zdk/core.zig");
+const OrderManager = core.OrderManager;
+const FillManager = core.FillManager;
+const PositionManager = core.PositionManager;
 
 pub fn writeOrderCSV(out: *OutputManager, om: *OrderManager, filename: []const u8) !void {
     const full_path = try out.filePath(std.heap.page_allocator, filename);
@@ -14,12 +15,18 @@ pub fn writeOrderCSV(out: *OutputManager, om: *OrderManager, filename: []const u
     var buf: [4096]u8 = undefined;
     var bw = file.writer(&buf);
 
-    _ = try bw.file.write("Count,Index,Timestamp,Side,Price,Volume\n");
+    _ = try bw.file.write("Count,Index,Timestamp,Type,Side,Price,Volume\n");
 
     var count: usize = 0;
 
     for (om.orders.items) |order| {
         count += 1;
+
+        const type_str = switch (order.type) {
+            .Market => "Market",
+            .Stop => "Stop",
+            .Limit => "Limit",
+        };
 
         const side_str = switch (order.side) {
             .Buy => "Buy Order",
@@ -29,8 +36,8 @@ pub fn writeOrderCSV(out: *OutputManager, om: *OrderManager, filename: []const u
         var line_buf: [128]u8 = undefined;
         const line = try std.fmt.bufPrint(
             &line_buf,
-            "{d:05},{d:05},{d},{s},{d:.4},{d:.4}\n",
-            .{ count, order.iter, order.timestamp, side_str, order.price, order.volume },
+            "{d:05},{d:05},{d},{s},{s},{d:.4},{d:.4}\n",
+            .{ count, order.iter, order.timestamp, type_str, side_str, order.price, order.volume },
         );
 
         _ = try bw.file.write(line);

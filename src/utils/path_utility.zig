@@ -62,7 +62,6 @@ pub fn mapRelPathToAbsPath(alloc: std.mem.Allocator, map_path: []const u8) ![]co
         file_name,
         &.{
             "usr/map",
-            "test/map",
         },
     );
 }
@@ -89,7 +88,7 @@ pub fn dbRelPathToAbsPath(alloc: std.mem.Allocator, db_path: []const u8) ![]cons
         file_name,
         &.{
             "usr/data",
-            "test/data",
+            "testdata/db",
         },
     );
 }
