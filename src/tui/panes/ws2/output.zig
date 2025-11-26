@@ -16,48 +16,117 @@ const Theme = struct {
 pub fn render(win: vaxis.Window, state: *State) void {
     border.draw(win, "output");
 
-    const result = state.execution_result orelse {
-        printLine(win, 1, 1, "No execution yet", .{ .fg = Theme.fg_label, .dim = true });
-        return;
-    };
-
     var row: usize = 1; // Start after top border
     const max_w = if (win.width > 2) win.width - 2 else 1;
     const max_h = if (win.height > 2) win.height - 2 else 0;
 
-    // Statistics section
-    printLine(win, row, 1, "Statistics", .{ .fg = Theme.fg_accent, .bold = true });
+    // Always show title
+    printLine(win, row, 1, "Execution Results", .{ .fg = Theme.fg_accent, .bold = true });
     row += 1;
     if (row >= max_h) return;
 
-    // Execution time
-    if (state.frameFmt("Execution time: {d} ms", .{result.exec_time_ms})) |time_str| {
+    const result = state.execution_result orelse {
+        printLine(win, row, 1, "Not run yet", .{ .fg = Theme.fg_label, .dim = true });
+        return;
+    };
+
+    // Status
+    const status_text = if (result.success) "✓ SUCCESS" else "✗ FAILED";
+    const status_color = if (result.success) vaxis.Color{ .index = 65 } else vaxis.Color{ .index = 95 };
+    printLine(win, row, 1, status_text, .{ .fg = status_color, .bold = true });
+    row += 2;
+    if (row >= max_h) return;
+
+    // Performance Metrics
+    printLine(win, row, 1, "Performance", .{ .fg = Theme.fg_accent, .bold = true });
+    row += 1;
+    if (row >= max_h) return;
+
+    // Total time
+    if (state.frameFmt("Total: {d} ms", .{result.total_time_ms})) |time_str| {
         printLine(win, row, 1, time_str, .{ .fg = Theme.fg_value });
     } else |_| {}
     row += 1;
     if (row >= max_h) return;
 
-    // Data points
-    if (state.frameFmt("Data points: {d}", .{result.data_points})) |points_str| {
-        printLine(win, row, 1, points_str, .{ .fg = Theme.fg_value });
+    // Time breakdown
+    const init_pct: f64 = if (result.total_time_ms > 0) 
+        (@as(f64, @floatFromInt(result.init_time_ms)) / @as(f64, @floatFromInt(result.total_time_ms)) * 100.0) 
+        else 0.0;
+    const exec_pct: f64 = if (result.total_time_ms > 0) 
+        (@as(f64, @floatFromInt(result.exec_time_ms)) / @as(f64, @floatFromInt(result.total_time_ms)) * 100.0) 
+        else 0.0;
+    
+    if (state.frameFmt("Init: {d} ms ({d:.1}%)", .{ result.init_time_ms, init_pct })) |init_str| {
+        printLine(win, row, 1, init_str, .{ .fg = Theme.fg_value });
     } else |_| {}
     row += 1;
     if (row >= max_h) return;
 
-    // Throughput (only if > 0)
+    if (state.frameFmt("Exec: {d} ms ({d:.1}%)", .{ result.exec_time_ms, exec_pct })) |exec_str| {
+        printLine(win, row, 1, exec_str, .{ .fg = Theme.fg_value });
+    } else |_| {}
+    row += 1;
+    if (row >= max_h) return;
+
+    // Throughput
     if (result.throughput > 0.0) {
         if (state.frameFmt("Throughput: {d:.1} pts/s", .{result.throughput})) |throughput_str| {
             printLine(win, row, 1, throughput_str, .{ .fg = Theme.fg_value });
         } else |_| {}
         row += 1;
+        if (row >= max_h) return;
     }
+
+    // Average time per point
+    const avg_time_per_point: f64 = if (result.data_points > 0)
+        (@as(f64, @floatFromInt(result.exec_time_ms)) / @as(f64, @floatFromInt(result.data_points)))
+        else 0.0;
+    if (avg_time_per_point > 0.0) {
+        if (state.frameFmt("Avg: {d:.3} ms/pt", .{avg_time_per_point})) |avg_str| {
+            printLine(win, row, 1, avg_str, .{ .fg = Theme.fg_value });
+        } else |_| {}
+        row += 1;
+        if (row >= max_h) return;
+    }
+
+    row += 1; // Spacing
     if (row >= max_h) return;
+
+    // Data Processing
+    printLine(win, row, 1, "Data Processing", .{ .fg = Theme.fg_accent, .bold = true });
+    row += 1;
+    if (row >= max_h) return;
+
+    if (state.frameFmt("Points: {d}", .{result.data_points})) |points_str| {
+        printLine(win, row, 1, points_str, .{ .fg = Theme.fg_value });
+    } else |_| {}
+    row += 1;
+    if (row >= max_h) return;
+
+    if (state.frameFmt("Trail: {d}", .{result.trail_size})) |trail_str| {
+        printLine(win, row, 1, trail_str, .{ .fg = Theme.fg_value });
+    } else |_| {}
+    row += 1;
+    if (row >= max_h) return;
+
+    // Efficiency (points per second)
+    const efficiency: f64 = if (result.exec_time_ms > 0)
+        (@as(f64, @floatFromInt(result.data_points)) / (@as(f64, @floatFromInt(result.exec_time_ms)) / 1000.0))
+        else 0.0;
+    if (efficiency > 0.0) {
+        if (state.frameFmt("Efficiency: {d:.0} pts/s", .{efficiency})) |eff_str| {
+            printLine(win, row, 1, eff_str, .{ .fg = Theme.fg_value });
+        } else |_| {}
+        row += 1;
+        if (row >= max_h) return;
+    }
 
     row += 1; // Spacing
     if (row >= max_h) return;
 
     // Output directory
-    printLine(win, row, 1, "DIRECTORY", .{ .fg = Theme.fg_accent, .bold = true });
+    printLine(win, row, 1, "Output", .{ .fg = Theme.fg_accent, .bold = true });
     row += 1;
     if (row >= max_h) return;
 
@@ -66,16 +135,11 @@ pub fn render(win: vaxis.Window, state: *State) void {
         (state.frameAlloc(output_dir_rel[0..@min(max_w - 1, output_dir_rel.len)]) catch return) 
         else output_dir_rel;
     printLine(win, row, 1, output_dir_display, .{ .fg = Theme.fg_value });
-    row += 2;
-    if (row >= max_h) return;
-
-    // Files
-    printLine(win, row, 1, "FILES", .{ .fg = Theme.fg_accent, .bold = true });
     row += 1;
     if (row >= max_h) return;
 
+    // Files
     if (result.success) {
-        // Orders CSV
         const orders_rel = extractRelPathFromUsr(state, result.output_orders_path);
         const orders_display = if (orders_rel.len > max_w - 3)
             (state.frameAlloc(orders_rel[0..@min(max_w - 3, orders_rel.len)]) catch return)
@@ -85,7 +149,6 @@ pub fn render(win: vaxis.Window, state: *State) void {
         row += 1;
         if (row >= max_h) return;
 
-        // Fills CSV
         const fills_rel = extractRelPathFromUsr(state, result.output_fills_path);
         const fills_display = if (fills_rel.len > max_w - 3)
             (state.frameAlloc(fills_rel[0..@min(max_w - 3, fills_rel.len)]) catch return)
@@ -95,7 +158,6 @@ pub fn render(win: vaxis.Window, state: *State) void {
         row += 1;
         if (row >= max_h) return;
 
-        // Positions CSV
         const positions_rel = extractRelPathFromUsr(state, result.output_positions_path);
         const positions_display = if (positions_rel.len > max_w - 3)
             (state.frameAlloc(positions_rel[0..@min(max_w - 3, positions_rel.len)]) catch return)

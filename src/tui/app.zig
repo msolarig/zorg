@@ -18,6 +18,8 @@ const ConfigView = panes.ConfigView;
 const Assembly = panes.Assembly;
 const Execution = panes.Execution;
 const Output = panes.Output;
+const EngineSpecs = panes.EngineSpecs;
+const DatasetSample = panes.DatasetSample;
 
 const Engine = @import("../engine/engine.zig").Engine;
 const abi = @import("../zdk/abi.zig");
@@ -66,25 +68,29 @@ fn renderTUI(vx: *vaxis.Vaxis, tty: *vaxis.Tty, state: *State) !void {
                 _ = prompt_win.print(&[_]vaxis.Cell.Segment{seg}, .{ .row_offset = 1, .col_offset = 1 });
             }
         }
-        // Browser pane (empty)
+        // Browser pane - Engine specs
         {
             const browser_win = win.child(.{ .x_off = 0, .y_off = @intCast(prompt_h + space_h), .width = @intCast(browser_w), .height = @intCast(browser_h) });
-            border.draw(browser_win, "");
+            EngineSpecs.render(browser_win, state);
         }
         // Log pane (active - shows logs)
         {
             const log_win = win.child(.{ .x_off = 0, .y_off = @intCast(prompt_h + browser_h + space_h * 2), .width = @intCast(browser_w), .height = @intCast(log_h) });
             EventLog.render(log_win, state);
         }
-        // Preview pane (empty)
+        // Preview pane - Execution stats/output (only when execution_result exists)
         {
             const preview_win = win.child(.{ .x_off = @intCast(browser_w + space_w), .y_off = 0, .width = @intCast(right_w), .height = @intCast(preview_h) });
-            border.draw(preview_win, "");
+            if (state.execution_result) |_| {
+                Output.render(preview_win, state);
+            } else {
+                border.draw(preview_win, "");
+            }
         }
-        // Binary Tree pane (empty)
+        // Binary Tree pane - Dataset sample
         {
             const bin_tree_win = win.child(.{ .x_off = @intCast(browser_w + space_w), .y_off = @intCast(prompt_h + browser_h + space_h * 2), .width = @intCast(right_w), .height = @intCast(log_h) });
-            border.draw(bin_tree_win, "");
+            DatasetSample.render(bin_tree_win, state);
         }
         {
             const footer_win = win.child(.{ .x_off = 0, .y_off = @intCast(content_h), .width = full_w, .height = footer_h });
@@ -1065,6 +1071,10 @@ pub fn run(gpa: std.mem.Allocator) !void {
 
                     // If it was a workspace key, skip other handlers and go straight to render
                     if (!is_workspace_key) {
+                        // Quit - works in all workspaces
+                        if (key.matches('q', .{})) break;
+                        if (key.matches('c', .{ .ctrl = true })) break;
+                        
                         // Prompt mode handling - works in both workspaces
                         // Enter prompt mode with ':'
                         if (key.matches(':', .{})) {
@@ -1077,7 +1087,7 @@ pub fn run(gpa: std.mem.Allocator) !void {
                         
                         // Only process other keys for workspace 1
                         if (state.current_workspace != 1) {
-                            // Workspace 2 doesn't process navigation keys (except prompt which is handled above)
+                            // Workspace 2 doesn't process navigation keys (except prompt and quit which are handled above)
                             continue;
                         }
 
@@ -1122,10 +1132,6 @@ pub fn run(gpa: std.mem.Allocator) !void {
                             continue;
                         }
 
-                        // Quit
-                        if (key.matches('q', .{})) break;
-                        if (key.matches('c', .{ .ctrl = true })) break;
-                        
                         // Navigate to root (usr/)
                         if (key.matches('c', .{})) {
                             state.alloc.free(state.cwd);

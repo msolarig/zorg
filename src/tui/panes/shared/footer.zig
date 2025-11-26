@@ -2,6 +2,7 @@ const std = @import("std");
 const vaxis = @import("vaxis");
 const types = @import("../../types.zig");
 const State = types.State;
+const Engine = @import("../../../engine/engine.zig").Engine;
 
 const Theme = struct {
     const bg = vaxis.Color{ .index = 233 }; // deep charcoal
@@ -21,6 +22,65 @@ pub fn render(win: vaxis.Window, state: *State) void {
         });
     }
 
+    if (state.current_workspace == 2) {
+        // Backtester workspace footer
+        renderBacktesterFooter(win, state);
+    } else {
+        // Main workspace footer
+        renderMainFooter(win, state);
+    }
+}
+
+fn renderBacktesterFooter(win: vaxis.Window, state: *State) void {
+    var col: usize = 0;
+
+    // Engine status
+    const engine_status = if (state.assembled_engine) |_| "Engine: Ready" else "Engine: Not assembled";
+    const engine_color = if (state.assembled_engine) |_| Theme.fg_accent else Theme.fg_count;
+    printLine(win, 0, col, engine_status, .{ .fg = engine_color, .bold = true });
+    col += engine_status.len + 2;
+
+    // Execution status
+    const exec_status = if (state.execution_result) |_| "Exec: Complete" else "Exec: Not run";
+    const exec_color = if (state.execution_result) |result| 
+        (if (result.success) vaxis.Color{ .index = 65 } else vaxis.Color{ .index = 95 })
+        else Theme.fg_count;
+    printLine(win, 0, col, exec_status, .{ .fg = exec_color, .bold = true });
+    col += exec_status.len + 2;
+
+    // Data points if engine is assembled
+    if (state.assembled_engine) |engine| {
+        const data_text = state.frameFmt("Data: {d} pts", .{engine.track.size}) catch "Data: ?";
+        printLine(win, 0, col, data_text, .{ .fg = Theme.fg_count, .bold = true });
+        col += data_text.len + 2;
+    }
+
+    // Auto name if engine is assembled
+    if (state.assembled_engine) |engine| {
+        const auto_name = std.mem.span(engine.auto.api.name);
+        const name_display = if (auto_name.len > 20) 
+            (state.frameAlloc(auto_name[0..20]) catch return)
+            else auto_name;
+        const auto_text = state.frameFmt("Auto: {s}", .{name_display}) catch return;
+        printLine(win, 0, col, auto_text, .{ .fg = Theme.fg, .dim = true });
+        col += auto_text.len + 2;
+    }
+
+    // Right: help
+    const help = "1:Main q:quit";
+    const help_col = if (win.width > help.len) win.width - help.len else 0;
+    printLine(win, 0, help_col, help, .{ .fg = Theme.fg, .dim = true });
+
+    // Message (if any)
+    if (state.message) |msg| {
+        const msg_col = col + 2;
+        if (msg_col < help_col - msg.len - 2) {
+            printLine(win, 0, msg_col, msg, .{ .fg = Theme.fg_accent, .bold = true });
+        }
+    }
+}
+
+fn renderMainFooter(win: vaxis.Window, state: *State) void {
     // Technical status line - overlay on the line
     const entry = state.currentEntry();
 
@@ -33,7 +93,7 @@ pub fn render(win: vaxis.Window, state: *State) void {
     
     // Always prepend "usr/" to path
     const full_path = if (clean_path.len == 0) "usr/" else state.frameFmt("usr/{s}", .{clean_path}) catch "usr/";
-    const ws_label = if (state.current_workspace == 2) "Backtester" else "Main";
+    const ws_label = "Main";
     
     // Truncate path if too long
     const path_max_len = 30;
@@ -93,21 +153,17 @@ pub fn render(win: vaxis.Window, state: *State) void {
 
     // Right: help with context-specific commands
     var help: []const u8 = undefined;
-    if (state.current_workspace == 2) {
-        help = "1:Main q:quit";
-    } else {
-        // Check for special file types that have commands
-        if (entry) |e| {
-            if (e.is_dir and isAutoDir(e.path)) {
-                help = "2:Backtester q:quit";
-            } else if (e.kind == .map) {
-                help = "r:run 2:Backtester q:quit";
-            } else {
-                help = "2:Backtester q:quit";
-            }
+    // Check for special file types that have commands
+    if (entry) |e| {
+        if (e.is_dir and isAutoDir(e.path)) {
+            help = "2:Backtester q:quit";
+        } else if (e.kind == .map) {
+            help = "r:run 2:Backtester q:quit";
         } else {
             help = "2:Backtester q:quit";
         }
+    } else {
+        help = "2:Backtester q:quit";
     }
     const help_col = if (win.width > help.len) win.width - help.len else 0;
     printLine(win, 0, help_col, help, .{ .fg = Theme.fg, .dim = true });

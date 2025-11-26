@@ -13,4 +13,6 @@ pub const ConfigView = @import("panes/ws2/config_view.zig");
 pub const Assembly = @import("panes/ws2/assembly.zig");
 pub const Execution = @import("panes/ws2/execution.zig");
 pub const Output = @import("panes/ws2/output.zig");
+pub const EngineSpecs = @import("panes/ws2/engine_specs.zig");
+pub const DatasetSample = @import("panes/ws2/dataset_sample.zig");
 
