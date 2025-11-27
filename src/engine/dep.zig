@@ -17,7 +17,9 @@ pub const Execution = struct {
 
 pub const Output = struct {
     pub const OutputManager = @import("output/output_manager.zig").OutputManager;
-    pub const csv_writer = @import("output/csv_writer.zig");
+    pub const sqlite_writer = @import("output/sqlite_writer.zig");
+    pub const logger = @import("output/logger.zig");
+    pub const html_report = @import("output/html_report.zig");
     pub const result_builder = @import("output/result_builder.zig");
 };
 

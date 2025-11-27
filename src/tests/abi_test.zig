@@ -27,17 +27,17 @@ test "Command has correct extern layout" {
 }
 
 test "Output.Packet has correct extern layout" {
-    try std.testing.expectEqual(@sizeOf(abi.Output.Packet), 16);
+    try std.testing.expectEqual(@sizeOf(abi.Output.Packet), 56);
     try std.testing.expectEqual(@alignOf(abi.Output.Packet), 8);
 }
 
 test "Input.Packet has correct extern layout" {
-    try std.testing.expectEqual(@sizeOf(abi.Input.Packet), 32);
+    try std.testing.expectEqual(@sizeOf(abi.Input.Packet), 40);
     try std.testing.expectEqual(@alignOf(abi.Input.Packet), 8);
 }
 
 test "ABI has correct extern layout" {
-    try std.testing.expectEqual(@sizeOf(abi.ABI), 40);
+    try std.testing.expectEqual(@sizeOf(abi.ABI), 48);
     try std.testing.expectEqual(@alignOf(abi.ABI), 8);
 }
 

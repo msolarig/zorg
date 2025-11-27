@@ -1,0 +1,25 @@
+{                                           
+    // Exec Configuration                       
+    "ENGINE_EXECUTION_MODE"                     : "Backtest",
+
+    // Auto Configuration
+    "ENGINE_AUTO_TO_ATTACH"                     : "breakout",
+ 
+    // Data Configuration
+    "ENGINE_DATA_FEED_MODE"                     : "SQLite3",
+    "ENGINE_DB_FILE_NAME"                       : "market.db",
+    "ENGINE_DB_TABLE_NAME"                      : "AJG_1D",
+    "ENGINE_TIMESTAMP_0"                        : 0,
+    "ENGINE_TIMESTAMP_n"                        : 2000000000,
+    "ENGINE_TRAIL_LENGTH"                       : 10,
+
+    // Account Configuration
+    "ENGINE_ACCOUNT_CONFIG": {
+        "balance"                               : 1000.0
+    },
+    
+    // Output Configutaion
+    "ENGINE_OUTPUT_CONFIG": {
+        "OUTPUT_DIR_NAME"                       : "testout"
+    }
+}

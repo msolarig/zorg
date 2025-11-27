@@ -5,7 +5,7 @@ const FillManager = core.FillManager;
 const FillSide = core.FillSide;
 
 test "Fill.init creates fill with correct values" {
-    const fill = Fill.init(50, 1735516800, .Buy, 155.25, 100.0);
+    const fill = Fill.init(1, 50, 1735516800, .Buy, 155.25, 100.0);
 
     try std.testing.expectEqual(fill.iter, 50);
     try std.testing.expectEqual(fill.timestamp, 1735516800);

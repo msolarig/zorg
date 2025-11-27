@@ -22,14 +22,14 @@ pub const Token = struct {
 };
 
 const Theme = struct {
-    const fg_keyword = vaxis.Color{ .index = 24 }; // very dark blue
-    const fg_string = vaxis.Color{ .index = 22 }; // very dark green
-    const fg_comment = vaxis.Color{ .index = 240 }; // very dark gray
-    const fg_number = vaxis.Color{ .index = 58 }; // very dark orange
-    const fg_type = vaxis.Color{ .index = 24 }; // very dark blue
-    const fg_function = vaxis.Color{ .index = 255 }; // white
-    const fg_operator = vaxis.Color{ .index = 240 }; // very dark gray
-    const fg_normal = vaxis.Color{ .index = 255 }; // white
+    const fg_keyword = vaxis.Color{ .index = 160 }; // red (keywords - matching #dc2626)
+    const fg_string = vaxis.Color{ .index = 35 }; // bright green (strings - matching #22c55e)
+    const fg_comment = vaxis.Color{ .index = 244 }; // gray (comments - matching #888)
+    const fg_number = vaxis.Color{ .index = 214 }; // orange (numbers)
+    const fg_type = vaxis.Color{ .index = 160 }; // red (types - matching #dc2626)
+    const fg_function = vaxis.Color{ .index = 252 }; // light gray (functions - matching #e0e0e0)
+    const fg_operator = vaxis.Color{ .index = 244 }; // gray (operators - matching #888)
+    const fg_normal = vaxis.Color{ .index = 252 }; // light gray (normal - matching #e0e0e0)
 };
 
 // Zig keywords
@@ -303,13 +303,10 @@ fn classifyZigWord(word: []const u8) TokenKind {
         }
     }
 
-    // Check if number
     if (isNumber(word)) {
         return .number;
     }
 
-    // Check if function (word followed by '(' - but we can't see that here)
-    // For now, assume it's normal
     return .normal;
 }
 

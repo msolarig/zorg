@@ -4,7 +4,6 @@ const zdk = @import("zdk.zig");
 // TODO: Update this with your auto's name
 
 const NAME: [*:0]const u8 = "My Auto";
-const DESC: [*:0]const u8 = ""; // Deprecated - need to take out before v1
 
 // PRIVATE VARIABLES -----------------------------------------------------------------------------*
 // TODO: Add any private variables your auto needs. For local functions, logic, or indicators, 
@@ -16,7 +15,7 @@ const DESC: [*:0]const u8 = ""; // Deprecated - need to take out before v1
 // output: Use this to submit orders
 
 fn logic(input: *const zdk.Input.Packet, output: *zdk.Output.Packet) callconv(.c) void {
-    // TODO: Implement your algorothmic logic here
+    // TODO: Implement your algorithmic logic here
     
     // Example: Access current price data.
     // You can access timestamp, OHLCV data.
@@ -27,7 +26,7 @@ fn logic(input: *const zdk.Input.Packet, output: *zdk.Output.Packet) callconv(.c
     // Example: Access account balance (uncomment if needed)
     // const balance = input.account.balance;
     
-    // Example: Simple strategy - buy if price went up
+    // Example: Simple auto - buy if price went up
     if (current_close > previous_close) {
         // Buy 10 units at market price
         zdk.Order.buyMarket(input, output, 10.0);
@@ -58,9 +57,10 @@ fn deinit() callconv(.c) void {
 var abi = zdk.ABI{
     .version = zdk.VERSION,
     .name = NAME,
-    .desc = DESC, // Deprecated
-    .logic = logic,
-    .deinit = deinit,
+    .alf = logic,
+    .adf = deinit,
+    .arf_size = 0,
+    .arf_init = null,
 };
 
 export fn getABI() callconv(.c) *const zdk.ABI {

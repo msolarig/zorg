@@ -2,6 +2,13 @@ const std = @import("std");
 const db = @import("sql_wrap.zig");
 const abi = @import("../../zdk/abi.zig");
 
+pub const DataError = error{
+    PrepareFailed,
+    EmptyDataset,
+    InvalidPrice,
+    InvalidTimestamp,
+} || std.mem.Allocator.Error;
+
 pub const Track = struct {
     size: u64,
     ts: std.ArrayListUnmanaged(u64),
@@ -23,7 +30,7 @@ pub const Track = struct {
         };
     }
 
-    pub fn load(self: *Track, alloc: std.mem.Allocator, db_handle: *anyopaque, table: []const u8, t0: u64, tn: u64) !void {
+    pub fn load(self: *Track, alloc: std.mem.Allocator, db_handle: *anyopaque, table: []const u8, t0: u64, tn: u64) DataError!void {
         const query: []const u8 = "SELECT timestamp, open, high, low, close, volume FROM {s} ORDER BY timestamp DESC";
         const command: []const u8 = try std.fmt.allocPrint(alloc, query, .{table});
         const c_command = try std.heap.c_allocator.dupeZ(u8, command);
@@ -37,8 +44,10 @@ pub const Track = struct {
         if (prepare != 0) {
             const errmsg = db.sqlite3_errmsg(db_handle);
             const msg = std.mem.span(errmsg);
-            std.debug.print("SQLite prepare error: {s}\n", .{msg});
-            return error.PrepareFailed;
+            std.debug.print("Error: Failed to query database table '{s}'\n", .{table});
+            std.debug.print("SQLite error: {s}\n", .{msg});
+            std.debug.print("Ensure the table exists and has the correct schema (timestamp, open, high, low, close, volume)\n", .{});
+            return DataError.PrepareFailed;
         }
 
         while (db.sqlite3_step(stmt.?) == 100) {
@@ -50,6 +59,16 @@ pub const Track = struct {
                 const cl = db.sqlite3_column_double(stmt.?, 4);
                 const vo: u64 = @intFromFloat(db.sqlite3_column_double(stmt.?, 5));
 
+                // Validate data quality
+                if (op <= 0 or hi <= 0 or lo <= 0 or cl <= 0) {
+                    std.debug.print("Warning: Invalid price data at timestamp {d} (prices must be positive)\n", .{ts});
+                    continue; // Skip invalid bars
+                }
+                if (hi < lo) {
+                    std.debug.print("Warning: Invalid OHLC at timestamp {d} (high < low)\n", .{ts});
+                    continue;
+                }
+
                 try self.ts.append(alloc, ts);
                 try self.op.append(alloc, op);
                 try self.hi.append(alloc, hi);
@@ -60,6 +79,13 @@ pub const Track = struct {
             }
         }
         _ = db.sqlite3_finalize(stmt.?);
+        
+        // Ensure we got some data
+        if (self.size == 0) {
+            std.debug.print("Error: No data found in range [{d}, {d})\n", .{t0, tn});
+            std.debug.print("Check your timestamp range in the map file\n", .{});
+            return DataError.EmptyDataset;
+        }
     }
 
     pub fn deinit(self: *Track, alloc: std.mem.Allocator) void {

@@ -9,8 +9,8 @@ const border = dep.Panes.Shared.border;
 const format_util = dep.TUIUtils.format_util;
 
 const Theme = struct {
-    const fg_active = vaxis.Color{ .index = 255 }; // white
-    const fg_inactive = vaxis.Color{ .index = 240 }; // very dark gray
+    const fg_active = vaxis.Color{ .index = 252 }; // light gray (matching #e0e0e0)
+    const fg_inactive = vaxis.Color{ .index = 244 }; // gray (matching #888)
 };
 
 pub fn render(win: vaxis.Window, state: *State) void {

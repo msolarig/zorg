@@ -6,8 +6,9 @@ const OrderDirection = core.OrderDirection;
 const OrderType = core.OrderType;
 
 test "Order.init creates order with correct values" {
-    const order = Order.init(100, 1735516800, .Market, .Buy, 150.50, 10.0);
+    const order = Order.init(1, 100, 1735516800, .Market, .Buy, 150.50, 10.0);
 
+    try std.testing.expectEqual(order.id, 1);
     try std.testing.expectEqual(order.iter, 100);
     try std.testing.expectEqual(order.timestamp, 1735516800);
     try std.testing.expectEqual(order.type, .Market);
@@ -28,11 +29,17 @@ test "OrderType enum values match C ABI" {
 }
 
 test "OrderManager.init creates empty manager" {
-    const om = OrderManager.init();
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const alloc = gpa.allocator();
+
+    var om = OrderManager.init(alloc);
+    defer om.deinit();
 
     try std.testing.expectEqual(om.orders.items.len, 0);
     try std.testing.expectEqual(om.orders_working.items.len, 0);
     try std.testing.expectEqual(om.orders_canceled.items.len, 0);
+    try std.testing.expectEqual(om.next_id, 1);
 }
 
 test "OrderManager.placeOrder adds order and tracks as working" {
@@ -40,14 +47,14 @@ test "OrderManager.placeOrder adds order and tracks as working" {
     defer _ = gpa.deinit();
     const alloc = gpa.allocator();
 
-    var om = OrderManager.init();
-    defer om.deinit(alloc);
+    var om = OrderManager.init(alloc);
+    defer om.deinit();
 
-    const order1 = Order.init(1, 1000, .Market, .Buy, 0, 100);
-    const order2 = Order.init(2, 2000, .Stop, .Sell, 95.0, 50);
+    const order1 = Order.init(1, 1, 1000, .Market, .Buy, 0, 100);
+    const order2 = Order.init(2, 2, 2000, .Stop, .Sell, 95.0, 50);
 
-    try om.placeOrder(alloc, order1);
-    try om.placeOrder(alloc, order2);
+    _ = try om.placeOrder(alloc, order1);
+    _ = try om.placeOrder(alloc, order2);
 
     try std.testing.expectEqual(om.orders.items.len, 2);
     try std.testing.expectEqual(om.orders_working.items.len, 2);
@@ -59,11 +66,11 @@ test "OrderManager.deinit frees all memory" {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const alloc = gpa.allocator();
 
-    var om = OrderManager.init();
-    try om.placeOrder(alloc, Order.init(1, 1000, .Market, .Buy, 0, 100));
-    try om.placeOrder(alloc, Order.init(2, 2000, .Market, .Sell, 0, 50));
+    var om = OrderManager.init(alloc);
+    _ = try om.placeOrder(alloc, Order.init(1, 1, 1000, .Market, .Buy, 0, 100));
+    _ = try om.placeOrder(alloc, Order.init(2, 2, 2000, .Market, .Sell, 0, 50));
 
-    om.deinit(alloc);
+    om.deinit();
 
     const leak_status = gpa.deinit();
     try std.testing.expect(leak_status == .ok);

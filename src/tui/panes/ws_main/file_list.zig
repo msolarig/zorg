@@ -16,17 +16,15 @@ const path_util = dep.TUIUtils.path_util;
 const Theme = struct {
     const bg_normal = vaxis.Color{ .index = 0 }; // black
     const bg_cursor = vaxis.Color{ .index = 0 }; // black (no highlight)
-    const fg_normal = vaxis.Color{ .index = 255 }; // white
-    const fg_dir = vaxis.Color{ .index = 24 }; // very dark blue (directories)
-    const fg_auto = vaxis.Color{ .index = 22 }; // very dark green (autos)
-    const fg_map = vaxis.Color{ .index = 58 }; // very dark orange (config)
-    const fg_db = vaxis.Color{ .index = 24 }; // very dark blue (database)
-    const fg_cursor = vaxis.Color{ .index = 255 }; // white
-    const fg_badge = vaxis.Color{ .index = 240 }; // very dark gray
-    const fg_meta = vaxis.Color{ .index = 240 }; // very dark gray (subtle)
+    const fg_normal = vaxis.Color{ .index = 252 }; // light gray (matching #e0e0e0)
+    const fg_dir = vaxis.Color{ .index = 244 }; // gray (directories)
+    const fg_auto = vaxis.Color{ .index = 35 }; // bright green (autos - matching #22c55e)
+    const fg_map = vaxis.Color{ .index = 214 }; // orange (config)
+    const fg_db = vaxis.Color{ .index = 244 }; // gray (database)
+    const fg_cursor = vaxis.Color{ .index = 160 }; // red (cursor - matching #dc2626)
+    const fg_badge = vaxis.Color{ .index = 160 }; // red (badges - matching #dc2626)
+    const fg_meta = vaxis.Color{ .index = 244 }; // gray (subtle - matching #888)
 };
-
-// Icon function removed - using badges instead
 
 fn getColor(kind: EntryKind) vaxis.Color {
     return switch (kind) {
@@ -77,7 +75,6 @@ fn getFileExtensionBadge(name: []const u8) []const u8 {
     if (std.mem.lastIndexOfScalar(u8, name, '.')) |dot_idx| {
         if (dot_idx + 1 < name.len) {
             const ext = name[dot_idx + 1..];
-            // Return static strings for common extensions (uppercase)
             if (std.mem.eql(u8, ext, "zig")) return "ZIG";
             if (std.mem.eql(u8, ext, "db")) return "DB";
             if (std.mem.eql(u8, ext, "sqlite")) return "DB";
@@ -95,9 +92,7 @@ fn getFileExtensionBadge(name: []const u8) []const u8 {
             if (std.mem.eql(u8, ext, "csv")) return "CSV";
             if (std.mem.eql(u8, ext, "toml")) return "TOML";
             if (std.mem.eql(u8, ext, "yaml") or std.mem.eql(u8, ext, "yml")) return "YAML";
-            // For unknown extensions, try to show first 4 chars uppercase
             if (ext.len <= 4) {
-                // We can't dynamically uppercase here, so return FILE for unknown
                 return "FILE";
             }
         }
@@ -452,7 +447,8 @@ pub fn render(win: vaxis.Window, state: *State) void {
     if (state.entries.items.len > content_h) {
         const total = state.entries.items.len;
         const ratio = @as(f32, @floatFromInt(state.cursor)) / @as(f32, @floatFromInt(total));
-        const indicator_pos = @as(usize, @intFromFloat(ratio * @as(f32, @floatFromInt(content_h - 1))));
+                const max_pos = if (content_h > 1) content_h - 1 else 0;
+                const indicator_pos = @as(usize, @intFromFloat(ratio * @as(f32, @floatFromInt(max_pos))));
 
         for (0..content_h) |y| {
             const char: []const u8 = if (y == indicator_pos) ":" else " ";

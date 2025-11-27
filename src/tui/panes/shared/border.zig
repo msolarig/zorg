@@ -5,8 +5,8 @@ const std = dep.Stdlib.std;
 const vaxis = dep.External.vaxis;
 
 const Theme = struct {
-    const border = vaxis.Color{ .index = 236 }; // very dark gray
-    const label = vaxis.Color{ .index = 255 }; // white
+    const border = vaxis.Color{ .index = 160 }; // red (matching #dc2626)
+    const label = vaxis.Color{ .index = 252 }; // light gray (matching #e0e0e0)
 };
 
 fn print(win: vaxis.Window, row: u16, col: u16, text: []const u8, style: vaxis.Style) void {

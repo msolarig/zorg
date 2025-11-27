@@ -14,7 +14,7 @@ pub const LoadedAuto = struct {
     api: *const abi.ABI,
 
     pub fn deinit(self: *LoadedAuto) void {
-        self.api.deinit();
+        self.api.adf();
         self.lib.close();
         self.allocator.free(self.lib_path);
     }

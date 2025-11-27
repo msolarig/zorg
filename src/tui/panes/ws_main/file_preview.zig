@@ -17,11 +17,11 @@ const format_util = dep.TUIUtils.format_util;
 const tree_util = dep.TUIUtils.tree_util;
 
 const Theme = struct {
-    const fg_label = vaxis.Color{ .index = 240 }; // very dark gray
-    const fg_value = vaxis.Color{ .index = 255 }; // white
-    const fg_accent = vaxis.Color{ .index = 240 }; // very dark gray (tree lines)
-    const fg_code = vaxis.Color{ .index = 255 }; // white
-    const fg_line_num = vaxis.Color{ .index = 240 }; // very dark gray
+    const fg_label = vaxis.Color{ .index = 244 }; // gray (matching #888)
+    const fg_value = vaxis.Color{ .index = 252 }; // light gray (matching #e0e0e0)
+    const fg_accent = vaxis.Color{ .index = 160 }; // red (tree lines - matching #dc2626)
+    const fg_code = vaxis.Color{ .index = 252 }; // light gray (matching #e0e0e0)
+    const fg_line_num = vaxis.Color{ .index = 244 }; // gray (matching #888)
 };
 
 const PreviewError = error{ CommandFailed };

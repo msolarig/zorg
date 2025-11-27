@@ -6,15 +6,25 @@ const PositionManager = @import("position.zig").PositionManager;
 
 pub const FillSide = Order.OrderDirection;
 
+pub const FillError = error{
+    InvalidPrice,
+    InvalidVolume,
+    InvalidBarData,
+    InvalidExposure,
+    NoActivePosition,
+} || std.mem.Allocator.Error;
+
 pub const Fill = struct {
+    order_id: u64,
     iter: u64,
     timestamp: u64,
     side: FillSide,
     price: f64,
     volume: f64,
 
-    pub fn init(iter: u64, timestamp: u64, side: FillSide, price: f64, volume: f64) Fill {
+    pub fn init(order_id: u64, iter: u64, timestamp: u64, side: FillSide, price: f64, volume: f64) Fill {
         return Fill{
+            .order_id = order_id,
             .iter = iter,
             .timestamp = timestamp,
             .side = side,
@@ -37,21 +47,96 @@ pub const FillManager = struct {
         };
     }
 
-    pub fn evaluateWorkingOrders(self: *FillManager, gpa: std.mem.Allocator, om: *OrderManager, pm: *PositionManager) !void {
-        for (om.orders_working.items) |order_index| {
+    pub fn evaluateWorkingOrders(
+        self: *FillManager,
+        gpa: std.mem.Allocator,
+        om: *OrderManager,
+        pm: *PositionManager,
+        bar_high: f64,
+        bar_low: f64,
+        bar_open: f64,
+        bar_close: f64,
+    ) FillError!void {
+        // Validate bar data
+        if (bar_high < bar_low or bar_open <= 0 or bar_close <= 0) {
+            if (@import("builtin").is_test == false) {
+                std.debug.print("Error: Invalid OHLC bar data (H:{d} L:{d} O:{d} C:{d})\n", .{bar_high, bar_low, bar_open, bar_close});
+            }
+            return FillError.InvalidBarData;
+        }
+        var i: usize = 0;
+        while (i < om.orders_working.items.len) {
+            const order_index = om.orders_working.items[i];
             const order = om.orders.items[order_index];
 
+            var should_fill = false;
+            var fill_price: f64 = 0;
+
             switch (order.type) {
-                .Market => try self.executeMarketOrder(gpa, order, pm),
-                .Stop => continue,
-                .Limit => continue,
+                .Market => {
+                    // Market orders fill at close price immediately
+                    should_fill = true;
+                    fill_price = bar_close;
+                },
+                .Stop => {
+                    // Stop Buy: triggers when price goes ABOVE stop price
+                    // Stop Sell: triggers when price goes BELOW stop price
+                    if (order.side == .Buy) {
+                        // Buy Stop: triggered if high >= stop price
+                        if (bar_high >= order.price) {
+                            should_fill = true;
+                            // Fill at stop price or worse (open if gap through)
+                            fill_price = if (bar_open > order.price) bar_open else order.price;
+                        }
+                    } else {
+                        // Sell Stop: triggered if low <= stop price
+                        if (bar_low <= order.price) {
+                            should_fill = true;
+                            // Fill at stop price or worse (open if gap through)
+                            fill_price = if (bar_open < order.price) bar_open else order.price;
+                        }
+                    }
+                },
+                .Limit => {
+                    // Limit Buy: fills when price goes AT OR BELOW limit price
+                    // Limit Sell: fills when price goes AT OR ABOVE limit price
+                    if (order.side == .Buy) {
+                        // Buy Limit: triggered if low <= limit price
+                        if (bar_low <= order.price) {
+                            should_fill = true;
+                            // Fill at limit price or better
+                            fill_price = order.price;
+                        }
+                    } else {
+                        // Sell Limit: triggered if high >= limit price
+                        if (bar_high >= order.price) {
+                            should_fill = true;
+                            // Fill at limit price or better
+                            fill_price = order.price;
+                        }
+                    }
+                },
             }
+
+            if (should_fill) {
+                // Create fill at determined price
+                const fill = Fill.init(order.id, order.iter, order.timestamp, order.side, fill_price, order.volume);
+                try self.fills.append(gpa, fill);
+                try pm.updateInstrumentExposure(gpa, fill);
+
+                // Remove from working orders
+                _ = om.working_lookup.remove(order.id);
+                _ = om.orders_working.orderedRemove(i);
+                // Don't increment i, since we removed current element
+                continue;
+            }
+
+            i += 1;
         }
-        om.orders_working.clearRetainingCapacity();
     }
 
-    pub fn executeMarketOrder(self: *FillManager, gpa: std.mem.Allocator, order: Order.Order, pm: *PositionManager) !void {
-        const fill = Fill.init(order.iter, order.timestamp, order.side, order.price, order.volume);
+    pub fn executeMarketOrder(self: *FillManager, gpa: std.mem.Allocator, order: Order.Order, pm: *PositionManager) FillError!void {
+        const fill = Fill.init(order.id, order.iter, order.timestamp, order.side, order.price, order.volume);
         try self.fills.append(gpa, fill);
         try pm.updateInstrumentExposure(gpa, fill);
     }

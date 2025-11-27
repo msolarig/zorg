@@ -12,11 +12,11 @@ const project_path_util = dep.ProjectUtils.path_util;
 const render_util = dep.TUIUtils.render_util;
 
 const Theme = struct {
-    const fg_label = vaxis.Color{ .index = 240 }; // very dark gray
-    const fg_value = vaxis.Color{ .index = 255 }; // white
-    const fg_accent = vaxis.Color{ .index = 240 }; // very dark gray
-    const fg_section = vaxis.Color{ .index = 240 }; // very dark gray
-    const fg_dim = vaxis.Color{ .index = 240 }; // very dark gray
+    const fg_label = vaxis.Color{ .index = 244 }; // gray (matching #888)
+    const fg_value = vaxis.Color{ .index = 252 }; // light gray (matching #e0e0e0)
+    const fg_accent = vaxis.Color{ .index = 160 }; // red (matching #dc2626)
+    const fg_section = vaxis.Color{ .index = 160 }; // red (matching #dc2626)
+    const fg_dim = vaxis.Color{ .index = 244 }; // gray (matching #888)
 };
 
 pub fn render(win: vaxis.Window, state: *State) void {

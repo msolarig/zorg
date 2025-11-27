@@ -12,13 +12,13 @@ const render_util = dep.TUIUtils.render_util;
 const format_util = dep.TUIUtils.format_util;
 
 const Theme = struct {
-    const fg_text = vaxis.Color{ .index = 255 }; // white
-    const fg_time = vaxis.Color{ .index = 240 }; // very dark gray (timestamps)
-    const fg_tag_info = vaxis.Color{ .index = 24 }; // very dark blue (info)
-    const fg_tag_warning = vaxis.Color{ .index = 58 }; // very dark orange (warning)
-    const fg_tag_success = vaxis.Color{ .index = 22 }; // very dark green (success)
-    const fg_tag_error = vaxis.Color{ .index = 52 }; // very dark red (error)
-    const fg_tag_comp = vaxis.Color{ .index = 22 }; // very dark green (comp)
+    const fg_text = vaxis.Color{ .index = 252 }; // light gray (matching #e0e0e0)
+    const fg_time = vaxis.Color{ .index = 244 }; // gray (matching #888)
+    const fg_tag_info = vaxis.Color{ .index = 244 }; // gray (info)
+    const fg_tag_warning = vaxis.Color{ .index = 214 }; // orange (warning)
+    const fg_tag_success = vaxis.Color{ .index = 35 }; // bright green (matching #22c55e)
+    const fg_tag_error = vaxis.Color{ .index = 160 }; // red (matching #dc2626)
+    const fg_tag_comp = vaxis.Color{ .index = 35 }; // bright green (comp)
 };
 
 pub fn render(win: vaxis.Window, state: *State) void {

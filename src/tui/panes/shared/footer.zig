@@ -12,23 +12,20 @@ const render_util = dep.TUIUtils.render_util;
 const format_util = dep.TUIUtils.format_util;
 const path_util = dep.TUIUtils.path_util;
 
+// Version info from entrypoint (via root module)
+const zorg = @import("root");
+const zdk_abi = @import("zdk");
+
 const Theme = struct {
     const bg = vaxis.Color{ .index = 0 }; // black
-    const fg = vaxis.Color{ .index = 255 }; // white
-    const fg_accent = vaxis.Color{ .index = 240 }; // very dark gray (accent)
-    const fg_count = vaxis.Color{ .index = 240 }; // very dark gray (accent)
+    const fg = vaxis.Color{ .index = 252 }; // light gray (matching #e0e0e0)
+    const fg_accent = vaxis.Color{ .index = 160 }; // red (matching #dc2626)
+    const fg_count = vaxis.Color{ .index = 244 }; // gray (matching #888)
 };
 
 pub fn render(win: vaxis.Window, state: *State) void {
-    // Single colored line on top
-    const line_style = vaxis.Style{ .fg = Theme.fg_accent };
-    for (0..win.width) |col| {
-        const seg = vaxis.Cell.Segment{ .text = "─", .style = line_style };
-        _ = win.print(&[_]vaxis.Cell.Segment{seg}, .{
-            .row_offset = 0,
-            .col_offset = @intCast(col),
-        });
-    }
+    // Clear the entire footer row
+    win.clear();
 
     if (state.current_workspace == 2) {
         // Backtester workspace footer
@@ -42,8 +39,11 @@ pub fn render(win: vaxis.Window, state: *State) void {
 fn renderBacktesterFooter(win: vaxis.Window, state: *State) void {
     var col: usize = 0;
 
-    // Version info on far left
-    const version_info = "Zorg 0.0.0 ZDK 0.0.0";
+    // Version info on far left - use comptime constant
+    const version_info = comptime blk: {
+        const ver = std.fmt.comptimePrint("Zorg {s} ZDK {d}.0.0", .{zorg.ZORG_VERSION, zdk_abi.ZDK_VERSION / 1_000_000});
+        break :blk ver;
+    };
     render_util.printLine(win, 0, col, version_info, .{ .fg = Theme.fg_count });
     col += version_info.len + 2;
 
@@ -56,8 +56,8 @@ fn renderBacktesterFooter(win: vaxis.Window, state: *State) void {
     // Execution status
     const exec_status = if (state.execution_result) |_| "Exec: Complete" else "Exec: Not run";
     const exec_color = if (state.execution_result) |_| 
-        vaxis.Color{ .index = 22 } // very dark green for success
-        else vaxis.Color{ .index = 52 }; // very dark red for not run
+        vaxis.Color{ .index = 35 } // bright green (matching #22c55e)
+        else vaxis.Color{ .index = 160 }; // red (matching #dc2626)
     render_util.printLine(win, 0, col, exec_status, .{ .fg = exec_color });
     col += exec_status.len + 2;
 
@@ -99,8 +99,11 @@ fn renderMainFooter(win: vaxis.Window, state: *State) void {
     // Format: VERSION Main [position/total] path TYPE
     var col: usize = 0;
     
-    // Version info on far left
-    const version_info = "Zorg 0.0.0 ZDK 0.0.0";
+    // Version info on far left - use comptime constant
+    const version_info = comptime blk: {
+        const ver = std.fmt.comptimePrint("Zorg {s} ZDK {d}.0.0", .{zorg.ZORG_VERSION, zdk_abi.ZDK_VERSION / 1_000_000});
+        break :blk ver;
+    };
     render_util.printLine(win, 0, col, version_info, .{ .fg = Theme.fg_count });
     col += version_info.len + 2;
     

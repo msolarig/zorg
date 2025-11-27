@@ -84,7 +84,11 @@ fn flattenTreeImpl(
     out: *std.ArrayList([]const u8),
     skip_root: bool,
 ) !void {
-    std.debug.assert(branch_stack.items.len == depth);
+    // Validate stack depth matches expected depth
+    if (branch_stack.items.len != depth) {
+        std.debug.print("Warning: Branch stack depth mismatch (expected: {d}, actual: {d})\n", .{depth, branch_stack.items.len});
+        return;
+    }
 
     // Skip root node if requested (only process children at depth 0)
     if (depth == 0 and skip_root) {

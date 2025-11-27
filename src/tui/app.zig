@@ -118,6 +118,9 @@ pub fn run(gpa: std.mem.Allocator) !void {
     try state.logFmt("log info: Workspace system initialized (Main: Browser, Backtester: Backtest)", .{});
     try state.logFmt("log comp: All systems operational - ready for commands", .{});
 
+    // Initial render before entering event loop
+    try renderTUI(&vx, &tty, &state);
+
     // Main loop
     while (true) {
         const event = loop.nextEvent();
@@ -1148,7 +1151,7 @@ fn executeEngineRun(state: *State, vx: *vaxis.Vaxis, tty: *vaxis.Tty) !void {
     renderTUI(vx, tty, state) catch {};
     
     const start_exec = std.time.milliTimestamp();
-    try state.logFmt("log info: Running strategy logic", .{});
+    try state.logFmt("log info: Running auto logic", .{});
     renderTUI(vx, tty, state) catch {};
     
     // Reset trail to first row before execution (allows multiple runs)
@@ -1192,7 +1195,7 @@ fn executeEngineRun(state: *State, vx: *vaxis.Vaxis, tty: *vaxis.Tty) !void {
     const exec_time = std.time.milliTimestamp() - start_exec;
     const total_time = std.time.milliTimestamp() - start_total;
     
-    try state.logFmt("log info: Strategy execution completed", .{});
+    try state.logFmt("log info: Auto execution completed", .{});
     renderTUI(vx, tty, state) catch {};
     
     try state.logFmt("log info: Writing output files", .{});

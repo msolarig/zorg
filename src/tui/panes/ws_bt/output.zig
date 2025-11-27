@@ -12,10 +12,10 @@ const render_util = dep.TUIUtils.render_util;
 const path_util = dep.TUIUtils.path_util;
 
 const Theme = struct {
-    const fg_label = vaxis.Color{ .index = 240 }; // very dark gray
-    const fg_value = vaxis.Color{ .index = 255 }; // white
-    const fg_accent = vaxis.Color{ .index = 240 }; // very dark gray
-    const fg_file = vaxis.Color{ .index = 22 }; // very dark green
+    const fg_label = vaxis.Color{ .index = 244 }; // gray (matching #888)
+    const fg_value = vaxis.Color{ .index = 252 }; // light gray (matching #e0e0e0)
+    const fg_accent = vaxis.Color{ .index = 160 }; // red (matching #dc2626)
+    const fg_file = vaxis.Color{ .index = 35 }; // bright green (files - matching #22c55e)
     const bg = vaxis.Color{ .index = 0 }; // black
 };
 

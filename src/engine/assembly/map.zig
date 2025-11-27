@@ -2,6 +2,22 @@ const std = @import("std");
 const path_util = @import("../../utils/path_utility.zig");
 const Account = @import("../../zdk/core.zig").Account;
 const OutputConfig = @import("../output/output_manager.zig").OutputConfig;
+const EngineError = @import("../errors.zig").EngineError;
+
+pub const MapError = error{
+    FileNotFound,
+    InvalidJSON,
+    MissingRequiredField,
+    InvalidFieldValue,
+    InputOutput,
+    NotSupported,
+    FileSystem,
+    NotLink,
+    UnrecognizedVolume,
+    UnknownName,
+    BadExePath,
+    InvalidFilePath,
+} || std.fs.File.OpenError || std.mem.Allocator.Error;
 
 const FeedMode = enum { Live, SQLite3 };
 const ExecMode = enum { LiveExecution, Backtest, Optimization };
@@ -19,14 +35,23 @@ pub const Map = struct {
     account: Account,
     output: OutputConfig,
 
-    pub fn init(alloc: std.mem.Allocator, map_path: []const u8) !Map {
-        var file = try std.fs.cwd().openFile(map_path, .{});
+    pub fn init(alloc: std.mem.Allocator, map_path: []const u8) MapError!Map {
+        var file = std.fs.cwd().openFile(map_path, .{}) catch {
+            std.debug.print("Error: Map file not found at: {s}\n", .{map_path});
+            return MapError.FileNotFound;
+        };
         defer file.close();
 
-        const file_bytes = try file.readToEndAlloc(alloc, std.math.maxInt(usize));
+        const file_bytes = file.readToEndAlloc(alloc, std.math.maxInt(usize)) catch |err| {
+            std.debug.print("Error: Failed to read map file: {s}\n", .{@errorName(err)});
+            return MapError.InvalidJSON;
+        };
         defer alloc.free(file_bytes);
 
-        const json_bytes = try stripJsonComments(alloc, file_bytes);
+        const json_bytes = stripJsonComments(alloc, file_bytes) catch |err| {
+            std.debug.print("Error: Failed to process JSON comments: {s}\n", .{@errorName(err)});
+            return MapError.InvalidJSON;
+        };
         defer alloc.free(json_bytes);
 
         const MapSchema = struct {
@@ -42,7 +67,12 @@ pub const Map = struct {
             ENGINE_OUTPUT_CONFIG: OutputConfig,
         };
 
-        var parsed = try std.json.parseFromSlice(MapSchema, alloc, json_bytes, .{});
+        var parsed = std.json.parseFromSlice(MapSchema, alloc, json_bytes, .{}) catch |err| {
+            std.debug.print("Error: Invalid JSON structure in map file\n", .{});
+            std.debug.print("Details: {s}\n", .{@errorName(err)});
+            std.debug.print("Ensure all required fields are present and correctly formatted\n", .{});
+            return MapError.InvalidJSON;
+        };
         defer parsed.deinit();
 
         var map = Map{
