@@ -1,9 +1,12 @@
-const std = @import("std");
-const vaxis = @import("vaxis");
+const dep = @import("../../dep.zig");
+
+const std = dep.Stdlib.std;
+
+const vaxis = dep.External.vaxis;
 
 const Theme = struct {
-    const border = vaxis.Color{ .index = 137 }; // brown-gray
-    const label = vaxis.Color{ .index = 187 }; // warm beige
+    const border = vaxis.Color{ .index = 236 }; // very dark gray
+    const label = vaxis.Color{ .index = 255 }; // white
 };
 
 fn print(win: vaxis.Window, row: u16, col: u16, text: []const u8, style: vaxis.Style) void {
@@ -24,12 +27,13 @@ pub fn draw(win: vaxis.Window, label: []const u8) void {
     const label_style = vaxis.Style{ .fg = Theme.label, .italic = true };
 
     // Top border with label (rounded)
-    if (label.len > 0 and w > label.len + 3) {
+    if (label.len > 0 and w > label.len + 5) {
         print(win, 0, 0, "╭", border_style);
-        print(win, 0, 1, label, label_style);
-        print(win, 0, @intCast(1 + label.len), "─", border_style);
+        print(win, 0, 1, " ", border_style);
+        print(win, 0, 2, label, label_style);
+        print(win, 0, @intCast(2 + label.len), " ", border_style);
         // Fill rest of top border
-        for (2 + label.len..w - 1) |col| {
+        for (3 + label.len..w - 1) |col| {
             print(win, 0, @intCast(col), "─", border_style);
         }
         print(win, 0, @intCast(w - 1), "╮", border_style);

@@ -1,11 +1,10 @@
 const std = @import("std");
-const data = @import("../engine/data.zig");
+const Track = @import("../engine/assembly/data.zig").Track;
+const Trail = @import("../engine/assembly/data.zig").Trail;
+const db = @import("../engine/assembly/sql_wrap.zig");
 const core = @import("../zdk/core.zig");
-const Track = data.Track;
-const Trail = data.Trail;
 const Account = core.Account;
 const AccountManager = core.AccountManager;
-const db = data.sql_wrap;
 
 const TEST_DB = "testdata/db/mono_table_test.db";
 const TEST_TABLE = "AAPL_1D";

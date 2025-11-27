@@ -1,13 +1,16 @@
-const std = @import("std");
+const dep = @import("dep.zig");
+
+const std = dep.Stdlib.std;
 const StringHashMap = std.StringHashMap;
-const Engine = @import("../engine/engine.zig").Engine;
+
+const Engine = dep.Engine.Engine;
 
 pub const EntryKind = enum {
     directory,
     file,
-    auto, // .zig files in usr/auto
-    map, // .jsonc files
-    database, // .db files
+    auto,
+    map,
+    database,
     unknown,
 };
 
@@ -23,13 +26,12 @@ const MAX_LOGS = 20;
 
 pub const LogEntry = struct {
     message: []const u8,
-    timestamp: i64, // Unix timestamp when log was created
+    timestamp: i64,
 };
 
 pub const ExecutionResult = struct {
     map_path: []const u8,
     auto_name: []const u8,
-    auto_desc: []const u8,
     auto_path: []const u8,
     exec_mode: []const u8,
     db_path: []const u8,
@@ -121,7 +123,6 @@ pub const State = struct {
         if (self.execution_result) |*result| {
             self.alloc.free(result.map_path);
             self.alloc.free(result.auto_name);
-            self.alloc.free(result.auto_desc);
             self.alloc.free(result.auto_path);
             self.alloc.free(result.exec_mode);
             self.alloc.free(result.db_path);

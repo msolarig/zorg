@@ -57,37 +57,4 @@ pub fn build(b: *std.Build) void {
     run_t.cwd = b.path(".");
 
     test_step.dependOn(&run_t.step);
-
-    // Create auto tool
-    const create_auto_exe = b.addExecutable(.{
-        .name = "create-auto",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/utils/create_auto.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-
-    create_auto_exe.root_module.addImport("path_utility", b.createModule(.{
-        .root_source_file = b.path("src/utils/path_utility.zig"),
-        .target = target,
-        .optimize = optimize,
-    }));
-    create_auto_exe.root_module.addImport("auto_creator", b.createModule(.{
-        .root_source_file = b.path("src/utils/auto_creator.zig"),
-        .target = target,
-        .optimize = optimize,
-    }));
-
-    b.installArtifact(create_auto_exe);
-
-    const create_auto_step = b.step("create-auto", "Create a new auto");
-    const create_auto_cmd = b.addRunArtifact(create_auto_exe);
-    create_auto_step.dependOn(&create_auto_cmd.step);
-    create_auto_cmd.step.dependOn(b.getInstallStep());
-    
-    // Pass all build args to create-auto (auto name, etc.)
-    if (b.args) |args| {
-        create_auto_cmd.addArgs(args);
-    }
 }

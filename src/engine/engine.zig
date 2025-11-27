@@ -1,15 +1,21 @@
-const std = @import("std");
-const data = @import("data.zig");
-const db = data.sql_wrap;
-const Track = data.Track;
-const Trail = data.Trail;
-const Map = @import("config/map.zig").Map;
-const loader = @import("auto/loader.zig");
-const Auto = loader.LoadedAuto;
-const Account = @import("../zdk/core.zig").Account;
-const OutputManager = @import("out/output.zig").OutputManager;
-const path_util = @import("../utils/path_utility.zig");
-const backtest = @import("exec/backtest.zig");
+const dep = @import("dep.zig");
+
+const std = dep.Stdlib.std;
+
+const Map = dep.Assembly.Map;
+const Auto = dep.Assembly.LoadedAuto;
+const Track = dep.Assembly.Track;
+const Trail = dep.Assembly.Trail;
+const db = dep.Assembly.sql_wrap;
+const loader = dep.Assembly.auto_loader;
+
+const Account = dep.ZDK.Account;
+
+const OutputManager = dep.Output.OutputManager;
+
+const path_util = dep.ProjectUtils.path_util;
+
+const backtest = dep.Execution.backtest;
 
 pub const Engine = struct {
     alloc: std.mem.Allocator,

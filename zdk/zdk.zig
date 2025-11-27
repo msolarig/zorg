@@ -170,7 +170,7 @@ pub const AutoDeinitFn = *const fn () callconv(.c) void;
 pub const ABI = extern struct {
     version: u32,
     name: [*:0]const u8,
-    desc: [*:0]const u8,
+    desc: [*:0]const u8, // Deprecated - kept for backward compatibility, not used
     logic: AutoLogicFn,
     deinit: AutoDeinitFn,
 };
