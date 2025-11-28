@@ -105,7 +105,7 @@ The last item, the html report, serves as a mere example of what you can do with
 
 Documentation for:
 
-- Zig Development Kit (ZDK)
+- Zorg Development Kit (ZDK)
 - Engine Map configurations
 - TUI Commands
 
