@@ -54,7 +54,7 @@ Autos are the core of Zorg, they are the algorithms that will be executed agains
 
 Don't worry about anything, just: 
 ```shell
-touch -auto WHATEVERNAMEYOUWANT
+touch -auto AUTONAME
 ```
 
 and a full auto template will be generated under usr/auto/
