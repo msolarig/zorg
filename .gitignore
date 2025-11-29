@@ -12,7 +12,3 @@ __pycache__/
 
 # macOS junk
 .DS_Store
-
-# Editor / IDE files
-.vscode/
-.idea/
