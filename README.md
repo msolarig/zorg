@@ -1,7 +1,7 @@
 <div align="center">
 
 # *Zorg*
-![Static Badge](https://img.shields.io/badge/Zorg-v0.1.0-orange) ![Static Badge](https://img.shields.io/badge/ZDK-v0.1.0-blue) ![Static Badge](https://img.shields.io/badge/Zig-0.15.2-green) ![Static Badge](https://img.shields.io/badge/macOS-26-purple)
+![Static Badge](https://img.shields.io/badge/Zorg-v0.2.0-orange) ![Static Badge](https://img.shields.io/badge/Zig-0.15.2-green) ![Static Badge](https://img.shields.io/badge/macOS-26-purple)
 
 Design, Test & Optimize Powerful Algorithms with Full Control
 
