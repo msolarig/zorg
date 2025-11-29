@@ -12,8 +12,8 @@ const render_util = dep.TUIUtils.render_util;
 const format_util = dep.TUIUtils.format_util;
 const path_util = dep.TUIUtils.path_util;
 
-// Version info from entrypoint (via root module)
-const zorg = @import("root");
+// Version info from version module
+const version = @import("version");
 const zdk_abi = @import("zdk");
 
 const Theme = struct {
@@ -41,7 +41,11 @@ fn renderBacktesterFooter(win: vaxis.Window, state: *State) void {
 
     // Version info on far left - use comptime constant
     const version_info = comptime blk: {
-        const ver = std.fmt.comptimePrint("Zorg {s} ZDK {d}.0.0", .{zorg.ZORG_VERSION, zdk_abi.ZDK_VERSION / 1_000_000});
+        const target_ver = zdk_abi.ZDK_VERSION;
+        const major = target_ver / 1_000_000;
+        const minor = (target_ver % 1_000_000) / 1_000;
+        const patch = target_ver % 1_000;
+        const ver = std.fmt.comptimePrint("Zorg {s} (target {d}.{d}.{d})", .{ version.ZORG_VERSION, major, minor, patch });
         break :blk ver;
     };
     render_util.printLine(win, 0, col, version_info, .{ .fg = Theme.fg_count });
@@ -101,7 +105,11 @@ fn renderMainFooter(win: vaxis.Window, state: *State) void {
     
     // Version info on far left - use comptime constant
     const version_info = comptime blk: {
-        const ver = std.fmt.comptimePrint("Zorg {s} ZDK {d}.0.0", .{zorg.ZORG_VERSION, zdk_abi.ZDK_VERSION / 1_000_000});
+        const target_ver = zdk_abi.ZDK_VERSION;
+        const major = target_ver / 1_000_000;
+        const minor = (target_ver % 1_000_000) / 1_000;
+        const patch = target_ver % 1_000;
+        const ver = std.fmt.comptimePrint("Zorg {s} (target {d}.{d}.{d})", .{ version.ZORG_VERSION, major, minor, patch });
         break :blk ver;
     };
     render_util.printLine(win, 0, col, version_info, .{ .fg = Theme.fg_count });

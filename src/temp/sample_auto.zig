@@ -14,7 +14,7 @@ const NAME: [*:0]const u8 = "My Auto";
 // input: Contains current iteration data (trail, account, exposure)
 // output: Use this to submit orders
 
-fn logic(input: *const zdk.Input.Packet, output: *zdk.Output.Packet) callconv(.c) void {
+fn logic(input: *const zdk.io.Input.Packet, output: *zdk.io.Output.Packet, arf_ptr: ?*anyopaque) callconv(.c) void {
     // TODO: Implement your algorithmic logic here
     
     // Example: Access current price data.
@@ -29,16 +29,16 @@ fn logic(input: *const zdk.Input.Packet, output: *zdk.Output.Packet) callconv(.c
     // Example: Simple auto - buy if price went up
     if (current_close > previous_close) {
         // Buy 10 units at market price
-        zdk.Order.buyMarket(input, output, 10.0);
+        zdk.order.Order.buyMarket(input, output, 10.0);
     }
     
     // Currently available order functions:
-    // - zdk.Order.buyMarket(input, output, volume)
-    // - zdk.Order.sellMarket(input, output, volume)
-    // - zdk.Order.buyLimit(input, output, price, volume)
-    // - zdk.Order.sellLimit(input, output, price, volume)
-    // - zdk.Order.buyStop(input, output, price, volume)
-    // - zdk.Order.sellStop(input, output, price, volume)
+    // - zdk.order.Order.buyMarket(input, output, volume)
+    // - zdk.order.Order.sellMarket(input, output, volume)
+    // - zdk.order.Order.buyLimit(input, output, price, volume)
+    // - zdk.order.Order.sellLimit(input, output, price, volume)
+    // - zdk.order.Order.buyStop(input, output, price, volume)
+    // - zdk.order.Order.sellStop(input, output, price, volume)
     
     // For more information on ZDK version & functionality, 
     // read the zdk.zig module attached in the auto directory.
@@ -54,8 +54,8 @@ fn deinit() callconv(.c) void {
 // ABI Handle - DO NOT MODIFY --------------------------------------------------------------------*
 // This structure connects the auto to the engine
 
-var abi = zdk.ABI{
-    .version = zdk.VERSION,
+var abi = zdk.abi.ABI{
+    .version = zdk.ZDK_VERSION,
     .name = NAME,
     .alf = logic,
     .adf = deinit,
@@ -63,7 +63,7 @@ var abi = zdk.ABI{
     .arf_init = null,
 };
 
-export fn getABI() callconv(.c) *const zdk.ABI {
+export fn getABI() callconv(.c) *const zdk.abi.ABI {
     return &abi;
 }
 

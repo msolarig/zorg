@@ -42,7 +42,7 @@ test "ABI has correct extern layout" {
 }
 
 test "ABI VERSION is defined" {
-    try std.testing.expectEqual(abi.VERSION, 1_000_000);
+    try std.testing.expectEqual(abi.VERSION, 2000);
 }
 
 test "CommandType enum values match C ABI" {

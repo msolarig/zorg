@@ -1,0 +1,17 @@
+=== Auto Runtime Log ===
+Timestamp: 1764403511
+Immediate Logs: 2
+Buffered Logs: 1
+
+========================================
+  IMMEDIATE LOGS (Critical Messages)
+========================================
+
+[ERR] Test error
+[WRN] Test warning
+
+========================================
+  BUFFERED LOGS (Detailed Trace)
+========================================
+
+[INF] Test info

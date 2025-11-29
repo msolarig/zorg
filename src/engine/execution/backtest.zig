@@ -6,6 +6,7 @@ const controller = @import("../../zdk/controller.zig");
 const sqlite_writer = @import("../output/sqlite_writer.zig");
 const logger = @import("../output/logger.zig");
 const html_report = @import("../output/html_report.zig");
+const version = @import("version");
 
 const OM = core.OrderManager;
 const FM = core.FillManager;
@@ -35,7 +36,6 @@ pub const BacktestError = error{
 } || std.mem.Allocator.Error;
 
 pub fn runBacktest(engine: *Engine) BacktestError!void {
-    // Validate minimum data requirements
     if (engine.track.size < engine.trail.size) {
         std.debug.print("Error: Insufficient data. Track size ({d}) < Trail size ({d})\n", .{engine.track.size, engine.trail.size});
         std.debug.print("Reduce trail size or provide more data\n", .{});
@@ -79,13 +79,12 @@ pub fn runBacktest(engine: *Engine) BacktestError!void {
     for (0..engine.track.size, 1..) |row, index| {
         try engine.trail.load(engine.track, row);
         
-        // Get current bar OHLC for order evaluation
-        const bar_open = engine.trail.op[0];
-        const bar_high = engine.trail.hi[0];
-        const bar_low = engine.trail.lo[0];
-        const bar_close = engine.trail.cl[0];
+        const op = engine.trail.op[0];
+        const hi = engine.trail.hi[0];
+        const lo = engine.trail.lo[0];
+        const cl = engine.trail.cl[0];
         
-        try fm.evaluateWorkingOrders(engine.alloc, &om, &pm, bar_high, bar_low, bar_open, bar_close);
+        try fm.evaluateWorkingOrders(engine.alloc, &om, &pm, hi, lo, op, cl);
 
         // Calculate position metrics
         const avg_price = pm.getAveragePrice();
@@ -127,7 +126,6 @@ pub fn runBacktest(engine: *Engine) BacktestError!void {
             return BacktestError.AutoExecutionFailed;
         };
 
-        // Collect logs from this iteration
         for (0..packet.log_count) |i| {
             try buffered_logs.append(engine.alloc, log_entry_buffer[i]);
         }
@@ -146,15 +144,12 @@ pub fn runBacktest(engine: *Engine) BacktestError!void {
         return BacktestError.OutputWriteFailed;
     };
     
-    // Get auto name from map
     const auto_name = std.fs.path.stem(engine.map.auto);
-    
-    // Build path to auto source file
     var auto_source_buf: [512]u8 = undefined;
     const auto_source_path = try std.fmt.bufPrint(&auto_source_buf, "usr/auto/{s}/auto.zig", .{auto_name});
     
-    // ZDK version
-    const zdk_version = "v1.0.0";
+    var zdk_version_buf: [32]u8 = undefined;
+    const zdk_version = try std.fmt.bufPrint(&zdk_version_buf, "v{s}", .{version.ZORG_VERSION});
     
     html_report.generateHTMLReport(&engine.out, "backtest.db", "report.html", auto_name, auto_source_path, zdk_version) catch |err| {
         std.debug.print("Error: Failed to generate HTML report: {s}\n", .{@errorName(err)});

@@ -1,34 +1,35 @@
 const zdk = @import("zdk");
 
+// Compiled auto binary target Zorg version
+// Cross-Checked for compatibility at assembly time
 pub const VERSION = zdk.ZDK_VERSION;
 
-pub const OrderDirection = zdk.OrderDirection;
-pub const OrderType = zdk.OrderType;
+pub const OrderDirection = zdk.types.OrderDirection;
+pub const OrderType = zdk.types.OrderType;
 
-pub const TrailABI = zdk.TrailABI;
-pub const AccountABI = zdk.AccountABI;
-pub const FillEntryABI = zdk.FillEntryABI;
-pub const FillABI = zdk.FillABI;
+pub const TrailABI = zdk.abi.TrailABI;
+pub const AccountABI = zdk.abi.AccountABI;
+pub const FillEntryABI = zdk.abi.FillEntryABI;
+pub const FillABI = zdk.abi.FillABI;
 
-pub const OrderRequest = zdk.OrderRequest;
-pub const CancelRequest = zdk.CancelRequest;
-pub const ModifyRequest = zdk.ModifyRequest;
-pub const CommandType = zdk.CommandType;
-pub const CommandPayload = zdk.CommandPayload;
-pub const Command = zdk.Command;
+pub const OrderRequest = zdk.commands.OrderRequest;
+pub const CancelRequest = zdk.commands.CancelRequest;
+pub const ModifyRequest = zdk.commands.ModifyRequest;
+pub const CommandType = zdk.commands.CommandType;
+pub const CommandPayload = zdk.commands.CommandPayload;
+pub const Command = zdk.commands.Command;
 
-pub const LogLevel = zdk.LogLevel;
-pub const LogEntry = zdk.LogEntry;
+pub const LogLevel = zdk.types.LogLevel;
+pub const LogEntry = zdk.types.LogEntry;
 
-// Namespace types
-pub const Input = zdk.Input;
-pub const Output = zdk.Output;
-pub const Order = zdk.Order;
+pub const Input = zdk.io.Input;
+pub const Output = zdk.io.Output;
+pub const Order = zdk.order.Order;
 
-pub const ALF = zdk.ALF;
-pub const ADF = zdk.ADF;
-pub const ArfInitFn = zdk.ArfInitFn;
+pub const ALF = zdk.abi.ALF;
+pub const ADF = zdk.abi.ADF;
+pub const ArfInitFn = zdk.abi.ArfInitFn;
 
-pub const ABI = zdk.ABI;
-pub const GetABIFn = zdk.GetABIFn;
-pub const ENTRY_SYMBOL = zdk.ENTRY_SYMBOL;
+pub const ABI = zdk.abi.ABI;
+pub const GetABIFn = zdk.abi.GetABIFn;
+pub const ENTRY_SYMBOL = zdk.abi.ENTRY_SYMBOL;

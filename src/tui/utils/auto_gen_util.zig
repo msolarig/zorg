@@ -17,14 +17,14 @@ pub fn createAuto(alloc: std.mem.Allocator, auto_name: []const u8, project_root:
     const template_path = try std.fs.path.join(alloc, &.{ project_root, "src", "temp", "sample_auto.zig" });
     defer alloc.free(template_path);
 
-    const zdk_source = try std.fs.path.join(alloc, &.{ project_root, "zdk", "zdk.zig" });
-    defer alloc.free(zdk_source);
+    const zdk_source_dir = try std.fs.path.join(alloc, &.{ project_root, "zdk" });
+    defer alloc.free(zdk_source_dir);
 
     const auto_file = try std.fs.path.join(alloc, &.{ auto_dir, "auto.zig" });
     defer alloc.free(auto_file);
 
-    const zdk_dest = try std.fs.path.join(alloc, &.{ auto_dir, "zdk.zig" });
-    defer alloc.free(zdk_dest);
+    const zdk_dest_dir = try std.fs.path.join(alloc, &.{ auto_dir, "zdk" });
+    defer alloc.free(zdk_dest_dir);
 
     // Check if auto already exists
     var cwd = std.fs.cwd();
@@ -37,8 +37,8 @@ pub fn createAuto(alloc: std.mem.Allocator, auto_name: []const u8, project_root:
         return error.TemplateNotFound;
     };
 
-    // Check if ZDK source exists
-    cwd.access(zdk_source, .{}) catch {
+    // Check if ZDK source directory exists
+    cwd.access(zdk_source_dir, .{}) catch {
         return error.ZDKNotFound;
     };
 
@@ -48,8 +48,8 @@ pub fn createAuto(alloc: std.mem.Allocator, auto_name: []const u8, project_root:
     // Copy template to auto.zig
     try copyFile(alloc, template_path, auto_file);
 
-    // Copy ZDK to zdk.zig (snapshot)
-    try copyFile(alloc, zdk_source, zdk_dest);
+    // Copy entire ZDK directory to auto dir (latest version)
+    try copyDirectoryRecursive(alloc, zdk_source_dir, zdk_dest_dir);
 }
 
 pub const CompileResult = struct {
@@ -101,6 +101,48 @@ fn copyFile(alloc: std.mem.Allocator, src_path: []const u8, dest_path: []const u
     defer alloc.free(src_content);
 
     try dest_file.writeAll(src_content);
+}
+
+fn copyDirectoryRecursive(alloc: std.mem.Allocator, src_dir_path: []const u8, dest_dir_path: []const u8) !void {
+    var cwd = std.fs.cwd();
+    
+    cwd.makePath(dest_dir_path) catch |err| {
+        if (err != error.PathAlreadyExists) return err;
+    };
+    
+    var src_dir = try cwd.openDir(src_dir_path, .{ .iterate = true });
+    defer src_dir.close();
+    
+    var dest_dir = try cwd.openDir(dest_dir_path, .{});
+    defer dest_dir.close();
+    
+    var iterator = src_dir.iterate();
+    while (try iterator.next()) |entry| {
+        const src_entry_path = try std.fs.path.join(alloc, &.{ src_dir_path, entry.name });
+        defer alloc.free(src_entry_path);
+        
+        const dest_entry_path = try std.fs.path.join(alloc, &.{ dest_dir_path, entry.name });
+        defer alloc.free(dest_entry_path);
+        
+        switch (entry.kind) {
+            .file => {
+                const src_file = try src_dir.openFile(entry.name, .{});
+                defer src_file.close();
+                
+                const dest_file = try dest_dir.createFile(entry.name, .{});
+                defer dest_file.close();
+                
+                const content = try src_file.readToEndAlloc(alloc, std.math.maxInt(usize));
+                defer alloc.free(content);
+                
+                try dest_file.writeAll(content);
+            },
+            .directory => {
+                try copyDirectoryRecursive(alloc, src_entry_path, dest_entry_path);
+            },
+            else => {},
+        }
+    }
 }
 
 fn compileAutoInternal(alloc: std.mem.Allocator, auto_file: []const u8, auto_name: []const u8, output_dir: []const u8) !CompileResult {
