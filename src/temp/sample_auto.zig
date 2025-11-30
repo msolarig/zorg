@@ -42,6 +42,8 @@ fn logic(input: *const zdk.io.Input.Packet, output: *zdk.io.Output.Packet, arf_p
     
     // For more information on ZDK version & functionality, 
     // read the zdk.zig module attached in the auto directory.
+    
+    _ = arf_ptr;
 }
 
 // Auto Deinitialization Function ----------------------------------------------------------------*

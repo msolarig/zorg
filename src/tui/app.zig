@@ -147,6 +147,8 @@ pub fn run(gpa: std.mem.Allocator) !void {
                             _ = state.prompt_text.pop();
                         }
                     } else if (key.codepoint >= 32 and key.codepoint < 127) {
+                        if (key.shifted_codepoint != null)
+                            try state.prompt_text.append(state.alloc, @intCast(key.shifted_codepoint.?));
                         try state.prompt_text.append(state.alloc, @intCast(key.codepoint));
                     } else {
                         continue;

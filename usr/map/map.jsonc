@@ -43,7 +43,7 @@
     "ENGINE_EXECUTION_MODE"                     : "Backtest",
 
     // Auto Configuration
-    "ENGINE_AUTO_TO_ATTACH"                     : "auto",
+    "ENGINE_AUTO_TO_ATTACH"                     : "testauto",
  
     // Data Configuration
     "ENGINE_DATA_FEED_MODE"                     : "SQLite3",

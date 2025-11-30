@@ -3,10 +3,10 @@
 
 /// Zorg version string (e.g., "0.1.0")
 /// This is automatically generated from build.zig.zon
-pub const ZORG_VERSION: []const u8 = "0.2.0";
+pub const ZORG_VERSION: []const u8 = "0.2.1";
 
 /// Target Zorg version for ABI compatibility (numeric format)
 /// Format: Major * 1_000_000 + Minor * 1_000 + Patch
-/// Example: 0.1.0 = 2000, 1.0.0 = 1_000_000
+/// Example: 0.1.0 = 2001, 1.0.0 = 1_000_000
 /// This is used to verify auto binaries match the engine version
-pub const TARGET_ZORG_VERSION: u32 = 2000;
+pub const TARGET_ZORG_VERSION: u32 = 2001;

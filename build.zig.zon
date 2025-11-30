@@ -1,6 +1,6 @@
 .{
     .name = .zorg,
-    .version = "0.2.0",
+    .version = "0.2.1",
     .fingerprint = 0xa892fc76afec33ec,
     .minimum_zig_version = "0.15.1",
     .dependencies = .{
